@@ -1,8 +1,13 @@
 package com.zeydie.slotseffect.mountcore;
 
 import com.zeydie.slotseffect.bukkit.listeners.EntityListener;
-import com.zeydie.slotseffect.mountcore.modules.ConfigurationPluginModule;
+import com.zeydie.slotseffect.bukkit.tasks.InventoryTask;
+import com.zeydie.slotseffect.mountcore.modules.GsonConfigurationPluginModule;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.val;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.module.PluginModuleManager;
@@ -12,16 +17,24 @@ import ru.mountcode.plugins.mountcore.paper.api.bootstrap.v1.MountPlugin;
 public final class SlotsEffect extends MountPlugin {
     private static final @NotNull String ID = "slotseffect";
 
+    @Getter
+    private static SlotsEffect instance;
+
     private final PluginManager pluginManager = this.getServer().getPluginManager();
 
     private final PluginModuleManager pluginModuleManager = this.getModuleManager();
 
-    private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
+    @Getter
+    private GsonConfigurationPluginModule configurationModule ;
+    //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
 
     private final EntityListener playerListener = new EntityListener();
 
     @Override
     public void construct() {
+        instance = this;
+
+        this.configurationModule = new GsonConfigurationPluginModule(this);
         this.pluginModuleManager.registerTranslationModule();
     }
 
@@ -30,6 +43,19 @@ public final class SlotsEffect extends MountPlugin {
         this.pluginModuleManager.registerModule(this.configurationModule);
 
         this.pluginManager.registerEvents(this.playerListener, this);
+
+        //TODO Bukkit
+        @NonNull val scheduler = Bukkit.getScheduler();
+
+        scheduler.runTaskTimer(
+                this,
+                () -> {
+                    for (@NonNull val player : Bukkit.getOnlinePlayers())
+                        scheduler.runTaskAsynchronously(this, () -> new InventoryTask(player));
+                },
+                0,
+                20);
+        //TODO
 
         Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }

@@ -1,15 +1,23 @@
 package com.zeydie.slotseffect.bukkit.utils;
 
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.NonNull;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Set;
 
 public final class ItemUtil {
-    public static @NotNull List<PotionEffect> getEffects(@NonNull final ItemStack itemstack) {
+    public static boolean hasComponent(@NonNull final ItemStack itemstack, @NonNull final NamespacedKey component) {
+        return getContainer(itemstack).has(component);
+    }
 
+    public static @NotNull PersistentDataContainerView getContainer(@NonNull final ItemStack itemstack) {
+        return itemstack.getPersistentDataContainer();
+    }
+
+    public static @NotNull Set<NamespacedKey> getComponents(@NonNull final ItemStack itemstack) {
+        return getContainer(itemstack).getKeys();
     }
 }

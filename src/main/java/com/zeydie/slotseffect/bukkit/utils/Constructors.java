@@ -8,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 public final class Constructors {
     public static final @NotNull String getPathOfEffect(@NonNull final PotionEffectType potionEffectType) {
-        val category = potionEffectType.getCategory().name();
-        val id = potionEffectType.getName();
+        @NonNull val category = potionEffectType.getCategory().name();
+        @NonNull val id = potionEffectType.getName();
 
         return category + "." + id;
     }

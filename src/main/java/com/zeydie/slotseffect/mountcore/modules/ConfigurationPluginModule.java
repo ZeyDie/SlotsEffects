@@ -2,8 +2,8 @@ package com.zeydie.slotseffect.mountcore.modules;
 
 import com.google.common.collect.Maps;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.bukkit.utils.Constructors;
+import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.Getter;
 import lombok.NonNull;
@@ -15,7 +15,6 @@ import ru.mountcode.plugins.mountcore.api.configuration.v1.exception.InvalidConf
 import ru.mountcode.plugins.mountcore.api.configuration.v1.impl.yaml.loader.YamlConfigurationLoader;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 public class ConfigurationPluginModule extends PluginModule implements IReloadableModule {

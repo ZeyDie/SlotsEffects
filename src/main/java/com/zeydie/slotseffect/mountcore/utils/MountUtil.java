@@ -1,5 +1,6 @@
 package com.zeydie.slotseffect.mountcore.utils;
 
+import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -13,6 +14,6 @@ public final class MountUtil {
     }
 
     public static @NotNull Path getPluginDirectory(@NonNull final PluginModule module) {
-        return module.getPlugin().getPluginDirectory();
+        return SlotsEffect.getInstance().getPluginDirectory();//return module.getPlugin().getPluginDirectory();
     }
 }
