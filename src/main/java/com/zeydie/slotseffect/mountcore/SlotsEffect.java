@@ -22,8 +22,6 @@ public final class SlotsEffect extends MountPlugin {
 
     private final PluginManager pluginManager = this.getServer().getPluginManager();
 
-    private final PluginModuleManager pluginModuleManager = this.getModuleManager();
-
     @Getter
     private GsonConfigurationPluginModule configurationModule ;
     //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
@@ -32,15 +30,16 @@ public final class SlotsEffect extends MountPlugin {
 
     @Override
     public void construct() {
-        instance = this;
-
-        this.configurationModule = new GsonConfigurationPluginModule(this);
-        this.pluginModuleManager.registerTranslationModule();
+        this.getModuleManager().registerTranslationModule();
     }
 
     @Override
     public void enable() {
-        this.pluginModuleManager.registerModule(this.configurationModule);
+        instance = this;
+
+        this.configurationModule = new GsonConfigurationPluginModule(this);
+
+        this.getModuleManager().registerModule(this.configurationModule);
 
         this.pluginManager.registerEvents(this.playerListener, this);
 

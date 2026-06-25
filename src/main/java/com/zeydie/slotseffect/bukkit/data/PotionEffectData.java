@@ -5,11 +5,12 @@ import lombok.NonNull;
 import lombok.val;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public record PotionEffectData
         (
-                @NonNull String type,
+                @NotNull String type,
                 int amplifier,
                 int duration
         ) {

@@ -8,15 +8,9 @@ prefix: ${name}
 authors: [ ${authors} ]
 description: ${description}
 website: ${website}
-has-open-classloader: false
 dependencies:
-  bootstrap:
-    MountCore:
-      load: BEFORE
-      required: true
-      join-classpath: true
   server:
     MountCore:
-      load: BEFORE
       required: true
       join-classpath: true
+      load: BEFORE

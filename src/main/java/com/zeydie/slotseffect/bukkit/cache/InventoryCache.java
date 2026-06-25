@@ -36,6 +36,7 @@ public final class InventoryCache {
 
             if (items.get(i) != null && !items.get(i).equals(itemStack)) {
                 items.set(i, itemStack);
+                InventoryHandler.getInstance().updateStaticItem(player, itemStack);
             }
         }
 

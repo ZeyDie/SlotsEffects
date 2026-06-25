@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zeydie.sgson.SGsonFile;
 import com.zeydie.slotseffect.bukkit.data.*;
+import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.Getter;
 import lombok.NonNull;
@@ -50,6 +51,13 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
         this.armorsPath = this.directory.resolve("armors");
         this.armorsetsPath = this.directory.resolve("armorsets");
 
+        try {
+            if (!Files.exists(this.itemsPath)) Files.createDirectories(this.itemsPath);
+            if (!Files.exists(this.armorsPath)) Files.createDirectories(this.armorsPath);
+            if (!Files.exists(this.armorsetsPath)) Files.createDirectories(this.armorsetsPath);
+        } catch (final Exception exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
@@ -60,19 +68,24 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
     @Override
     public void enable() {
         try {
+            SlotsEffect.getInstance().logger().info("GsonConfigurationPluginModule enabled");
+
             if (Files.list(this.itemsPath).count() == 0) {
                 @NonNull val example = new ItemEffectData();
 
                 example.setComponent(new NamespacedKey("namespace", "key"));
+                example.setSlots(List.of("ALL"));
                 example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
 
                 SGsonFile.createPretty(this.itemsPath.resolve("example.json")).writeJsonFile(example);
             }
 
-            Files.walk(this.itemsPath)
+            Files.list(this.itemsPath)
                     .forEach(
                             path ->
                             {
+                                SlotsEffect.getInstance().logger().info("Loading " + path);
+
                                 @NonNull val itemEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ItemEffectData());
                                 @NonNull val list = this.itemsEffects.getOrDefault(itemEffectData, new ArrayList<>());
 
@@ -83,10 +96,12 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                             }
                     );
 
-            Files.walk(this.armorsPath)
+            Files.list(this.armorsPath)
                     .forEach(
                             path ->
                             {
+                                SlotsEffect.getInstance().logger().info("Loading " + path);
+
                                 @NonNull val armorEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorEffectData());
                                 @NonNull val list = this.armorEffects.getOrDefault(armorEffectData, new ArrayList<>());
 
@@ -97,10 +112,12 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                             }
                     );
 
-            Files.walk(this.armorsetsPath)
+            Files.list(this.armorsetsPath)
                     .forEach(
                             path ->
                             {
+                                SlotsEffect.getInstance().logger().info("Loading " + path);
+
                                 @NonNull val armorSetEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorSetEffectData());
                                 @NonNull val list = this.armorSetsEffects.getOrDefault(armorSetEffectData, new ArrayList<>());
 
