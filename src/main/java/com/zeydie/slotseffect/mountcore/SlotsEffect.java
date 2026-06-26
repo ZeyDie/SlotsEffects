@@ -1,11 +1,11 @@
 package com.zeydie.slotseffect.mountcore;
 
 import com.zeydie.slotseffect.bukkit.listeners.EntityListener;
+import com.zeydie.slotseffect.bukkit.listeners.PlayerListener;
 import com.zeydie.slotseffect.bukkit.tasks.InventoryTask;
 import com.zeydie.slotseffect.mountcore.modules.GsonConfigurationPluginModule;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import ru.mountcode.plugins.mountcore.api.v3.bukkit.Sender;
@@ -17,13 +17,16 @@ public final class SlotsEffect extends MountPlugin {
     @Getter
     private static SlotsEffect instance;
 
-    private final PluginManager pluginManager = this.getServer().getPluginManager();
+    private final @NotNull InventoryTask inventoryTask = new InventoryTask();
+
+    private final @NotNull PluginManager pluginManager = this.getServer().getPluginManager();
 
     @Getter
     private GsonConfigurationPluginModule configurationModule;
     //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
 
-    private final EntityListener playerListener = new EntityListener();
+    private final @NotNull EntityListener entityListener = new EntityListener();
+    private final @NotNull PlayerListener playerListener = new PlayerListener();
 
     @Override
     public void construct() {
@@ -38,15 +41,10 @@ public final class SlotsEffect extends MountPlugin {
 
         this.getModuleManager().registerModule(this.configurationModule);
 
+        this.pluginManager.registerEvents(this.entityListener, this);
         this.pluginManager.registerEvents(this.playerListener, this);
 
-        Bukkit.getScheduler()
-                .runTaskTimer(
-                        this,
-                        new InventoryTask(),
-                        0,
-                        20
-                );
+        this.inventoryTask.runTaskTimerAsynchronously(this, 0, 1);
 
         Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }

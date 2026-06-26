@@ -14,8 +14,6 @@ public class EffectData {
     private @NotNull UUID uuid = UUID.randomUUID();
     private @Nullable List<String> comments;
 
-    private @NotNull List<String> slots = List.of("ALL");
-
     private @Nullable List<PotionEffectData> staticEffects;
     private @Nullable List<PotionEffectData> attackerEffects;
     private @Nullable List<PotionEffectData> victimEffects;

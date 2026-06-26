@@ -2,13 +2,17 @@ package com.zeydie.slotseffect.mountcore.modules;
 
 import com.google.common.collect.Maps;
 import com.zeydie.sgson.SGsonFile;
-import com.zeydie.slotseffect.bukkit.data.*;
+import com.zeydie.slotseffect.bukkit.data.ArmorEffectData;
+import com.zeydie.slotseffect.bukkit.data.ArmorSetEffectData;
+import com.zeydie.slotseffect.bukkit.data.ItemEffectData;
+import com.zeydie.slotseffect.bukkit.data.PotionEffectData;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -36,11 +40,11 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
     private final @NotNull Path armorsetsPath;
 
     @Getter
-    private final @NotNull Map<NamespacedKey, List<EffectData>> itemsEffects = Maps.newHashMap();
+    private final @NotNull Map<NamespacedKey, List<ItemEffectData>> itemsEffects = Maps.newHashMap();
     @Getter
-    private final @NotNull Map<NamespacedKey, List<EffectData>> armorEffects = Maps.newHashMap();
+    private final @NotNull Map<NamespacedKey, List<ArmorEffectData>> armorEffects = Maps.newHashMap();
     @Getter
-    private final @NotNull Map<NamespacedKey, List<EffectData>> armorSetsEffects = Maps.newHashMap();
+    private final @NotNull Map<NamespacedKey, List<ArmorSetEffectData>> armorSetsEffects = Maps.newHashMap();
 
     public GsonConfigurationPluginModule(@NonNull final IMountPlugin plugin) {
         super(plugin);
@@ -74,12 +78,36 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
 
                 example.setComponent(new NamespacedKey("namespace", "key"));
                 example.setSlots(List.of("ALL"));
-                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED, 3, PotionEffect.INFINITE_DURATION)));
+                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
 
                 SGsonFile.createPretty(this.itemsPath.resolve("example.json")).writeJsonFile(example);
             }
+            if (Files.list(this.armorsPath).count() == 0) {
+                @NonNull val example = new ArmorEffectData();
+
+                @NonNull val equipmentSlotsWithComponents = Maps.<EquipmentSlot, NamespacedKey>newHashMap();
+
+                example.setEquipmentSlot(EquipmentSlot.HEAD);
+                example.setComponent(new NamespacedKey("namespace", "key"));
+                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
+
+                SGsonFile.createPretty(this.armorsPath.resolve("example.json")).writeJsonFile(example);
+            }
+            if (Files.list(this.armorsetsPath).count() == 0) {
+                @NonNull val example = new ArmorSetEffectData();
+
+                @NonNull val equipmentSlotsWithComponents = Maps.<EquipmentSlot, NamespacedKey>newHashMap();
+
+                equipmentSlotsWithComponents.put(EquipmentSlot.HEAD, new NamespacedKey("namespace", "key"));
+
+                example.setEquipmentSlotsWithComponents(equipmentSlotsWithComponents);
+                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
+
+                SGsonFile.createPretty(this.armorsetsPath.resolve("example.json")).writeJsonFile(example);
+            }
 
             Files.list(this.itemsPath)
+                    .filter(path -> path.toString().endsWith(".json"))
                     .forEach(
                             path ->
                             {
@@ -96,6 +124,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                     );
 
             Files.list(this.armorsPath)
+                    .filter(path -> path.toString().endsWith(".json"))
                     .forEach(
                             path ->
                             {
@@ -112,6 +141,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                     );
 
             Files.list(this.armorsetsPath)
+                    .filter(path -> path.toString().endsWith(".json"))
                     .forEach(
                             path ->
                             {

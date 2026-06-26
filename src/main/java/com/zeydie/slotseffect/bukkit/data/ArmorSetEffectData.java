@@ -1,12 +1,14 @@
 package com.zeydie.slotseffect.bukkit.data;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+@Setter
 @Getter
 public class ArmorSetEffectData extends EffectData {
     private @NotNull Map<EquipmentSlot, NamespacedKey> equipmentSlotsWithComponents;
