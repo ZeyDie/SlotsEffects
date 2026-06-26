@@ -15,27 +15,36 @@ public final class InventoryCache {
     @Getter
     private static final @NotNull InventoryCache instance = new InventoryCache();
 
-    private final @NotNull Map<UUID, ItemStack[]> cache = new HashMap<>();
+    private final @NotNull Map<UUID, ItemStack[]> inventoryCache = new HashMap<>();
+    private final @NotNull Map<UUID, ItemStack[]> armorCache = new HashMap<>();
 
     public void cache(@NonNull final Player player) {
-        @NonNull val inventory = player.getInventory();
+        @NonNull val playerUniqueId = player.getUniqueId();
+        @NonNull val playerInventory = player.getInventory();
 
-        @NonNull val items = this.cache.computeIfAbsent(player.getUniqueId(), uuid -> new ItemStack[inventory.getSize()]);
+        @NonNull val contents = playerInventory.getContents();
+        @NonNull val armorContents = playerInventory.getArmorContents();
 
-        for (int i = 0; i < inventory.getContents().length; i++) {
-            @Nullable val itemStack = inventory.getContents()[i];
+        @NonNull val inventories = this.inventoryCache.computeIfAbsent(playerUniqueId, uuid -> contents.clone());
 
-            if (items[i] != null && !items[i].isSimilar(itemStack)) {
-                items[i] = itemStack;
+        for (int i = 0; i < contents.length; i++) {
+            @Nullable val itemStack = contents[i];
+            @Nullable val cachedItemStack = inventories[i];
+
+            if (cachedItemStack == null || !cachedItemStack.isSimilar(itemStack)) {
+                inventories[i] = itemStack;
                 ItemEffects.applyEffects(player, itemStack, i);
             }
         }
 
-        for (int i = 0; i < inventory.getArmorContents().length; i++) {
-            @Nullable val itemStack = inventory.getArmorContents()[i];
+        @NonNull val armors = this.armorCache.computeIfAbsent(playerUniqueId, uuid -> armorContents.clone());
 
-            if (items[i] != null && !items[i].isSimilar(itemStack)) {
-                items[i] = itemStack;
+        for (int i = 0; i < armorContents.length; i++) {
+            @Nullable val itemStack = armorContents[i];
+            @Nullable val cachedItemStack = armors[i];
+
+            if (cachedItemStack == null || !cachedItemStack.isSimilar(itemStack)) {
+                armors[i] = itemStack;
                 ItemEffects.applyEffects(player, itemStack, i);
             }
         }
@@ -48,5 +57,12 @@ public final class InventoryCache {
                 InventoryHandler.getInstance().updateStaticItem(player, itemStack);
             }
         }*/
+    }
+
+    public void uncache(@NonNull final Player player) {
+        @NonNull val playerUniqueId = player.getUniqueId();
+
+        this.inventoryCache.remove(playerUniqueId);
+        this.armorCache.remove(playerUniqueId);
     }
 }

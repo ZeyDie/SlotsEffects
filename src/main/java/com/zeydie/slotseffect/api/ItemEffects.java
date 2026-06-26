@@ -24,23 +24,27 @@ public final class ItemEffects {
     }
 
     public static void applyEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        getStaticEffects(itemstack, slot).forEach(potionEffect -> applyEffect(player, potionEffect));
+        for (@NonNull val potionEffect : getStaticEffects(itemstack, slot))
+            applyEffect(player, potionEffect);
     }
 
     public static void applyAtackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         if (attackerLivingEntity instanceof final Player player)
-            getAttackerEffects(itemstack, equipmentSlot).forEach(potionEffect -> applyEffect(player, potionEffect));
+            for (@NonNull val potionEffect : getAttackerEffects(itemstack, equipmentSlot))
+                applyEffect(player, potionEffect);
     }
 
     public static void applyVictimEffects(@NonNull final LivingEntity victimLivingEntity, @NonNull final ItemStack itemstack) {
         if (victimLivingEntity instanceof final Player player)
-            getVictimEffects(itemstack).forEach(potionEffect -> applyEffect(player, potionEffect));
+            for (@NonNull val potionEffect : getVictimEffects(itemstack))
+                applyEffect(player, potionEffect);
     }
 
     public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
-        if (components.isEmpty()) return List.of();
+        if (components.isEmpty())
+            return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
@@ -48,35 +52,32 @@ public final class ItemEffects {
                 .getConfigurationModule()
                 .getItemsEffects();
 
-        components.forEach(
-                component -> {
-                    itemEffects.getOrDefault(component, List.of())
-                            .stream()
-                            .filter(
-                                    effectData -> {
-                                        @NonNull val slots = effectData.getSlots();
+        for (@NonNull val component : components) {
+            @Nullable val effects = itemEffects.get(component);
 
-                                        if (slots.contains("ALL") || slots.contains("*"))
-                                            return true;
+            if (effects == null)
+                continue;
 
-                                        return slots.contains("SLOT_" + slot);
-                                    }
-                            )
-                            .forEach(
-                                    effectData -> effectData.getStaticEffects()
-                                            .forEach(
-                                                    potionEffectData ->
-                                                    {
-                                                        @Nullable val potionEffect = potionEffectData.createPotionEffect();
+            for (@NonNull val effectData : effects) {
+                @Nullable val slots = effectData.getSlots();
 
-                                                        if (potionEffect != null)
-                                                            potionEffects.add(potionEffect);
-                                                    }
-                                            )
-                            );
+                if (
+                        slots != null && (
+                                !slots.contains("*")
+                                        && !slots.contains("ALL")
+                                        && !slots.contains("SLOT_" + slot)
+                        )
+                )
+                    continue;
 
+                for (@NonNull val data : effectData.getStaticEffects()) {
+                    @NonNull val effect = data.createPotionEffect();
+
+                    if (effect != null)
+                        potionEffects.add(effect);
                 }
-        );
+            }
+        }
 
         return potionEffects;
     }
@@ -84,7 +85,8 @@ public final class ItemEffects {
     public static @NotNull List<PotionEffect> getAttackerEffects(@NonNull final ItemStack itemstack, @Nullable final EquipmentSlot equipmentSlot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
-        if (components.isEmpty()) return List.of();
+        if (components.isEmpty())
+            return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
@@ -92,32 +94,34 @@ public final class ItemEffects {
                 .getConfigurationModule()
                 .getItemsEffects();
 
-        components.forEach(
-                component -> {
-                    itemEffects.getOrDefault(component, List.of())
-                            .stream()
-                            .filter(
-                                    effectData -> {
-                                        if (equipmentSlot == null)
-                                            return true;
+        for (@NonNull val component : components) {
+            @Nullable val effects = itemEffects.get(component);
 
-                                        @NonNull val slots = effectData.getSlots();
+            if (effects == null)
+                continue;
 
-                                        if (slots.contains("ALL") || slots.contains("*"))
-                                            return true;
+            for (@NonNull val effectData : effects) {
+                if (equipmentSlot != null) {
+                    @Nullable val slots = effectData.getSlots();
 
-                                        return slots.contains(equipmentSlot.name());
-                                    }
+                    if (
+                            slots != null && (
+                                    !slots.contains("*")
+                                            && !slots.contains("ALL")
+                                            && !slots.contains(equipmentSlot.name())
                             )
-                            .map(
-                                    (Function<EffectData, List<PotionEffect>>) potionEffectData -> potionEffectData.getAttackerEffects()
-                                            .stream()
-                                            .map(PotionEffectData::createPotionEffect)
-                                            .toList()
-                            )
-                            .forEach(potionEffects::addAll);
+                    )
+                        continue;
                 }
-        );
+
+                for (@NonNull val data : effectData.getAttackerEffects()) {
+                    @NonNull val effect = data.createPotionEffect();
+
+                    if (effect != null)
+                        potionEffects.add(effect);
+                }
+            }
+        }
 
         return potionEffects;
     }
@@ -125,7 +129,8 @@ public final class ItemEffects {
     public static @NotNull List<PotionEffect> getVictimEffects(@NonNull final ItemStack itemstack) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
-        if (components.isEmpty()) return List.of();
+        if (components.isEmpty())
+            return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
@@ -133,19 +138,21 @@ public final class ItemEffects {
                 .getConfigurationModule()
                 .getItemsEffects();
 
-        components.forEach(
-                component -> {
-                    itemEffects.getOrDefault(component, List.of())
-                            .stream()
-                            .map(
-                                    (Function<EffectData, List<PotionEffect>>) potionEffectData -> potionEffectData.getVictimEffects()
-                                            .stream()
-                                            .map(PotionEffectData::createPotionEffect)
-                                            .toList()
-                            )
-                            .forEach(potionEffects::addAll);
+        for (@NonNull val component : components) {
+            @Nullable val effects = itemEffects.get(component);
+
+            if (effects == null)
+                continue;
+
+            for (@NonNull val effectData : effects) {
+                for (@NonNull val data : effectData.getVictimEffects()) {
+                    @NonNull val effect = data.createPotionEffect();
+
+                    if (effect != null)
+                        potionEffects.add(effect);
                 }
-        );
+            }
+        }
 
         return potionEffects;
     }
