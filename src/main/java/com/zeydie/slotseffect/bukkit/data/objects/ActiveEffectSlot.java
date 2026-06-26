@@ -1,4 +1,4 @@
-package com.zeydie.slotseffect.bukkit.data;
+package com.zeydie.slotseffect.bukkit.data.objects;
 
 import lombok.NonNull;
 import org.bukkit.potion.PotionEffect;

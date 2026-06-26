@@ -28,7 +28,7 @@ public final class InventoryCache {
         @NonNull val contents = playerInventory.getContents();
         @NonNull val armorContents = playerInventory.getArmorContents();
 
-        @NonNull val inventories = this.inventoryCache.computeIfAbsent(playerUniqueId, uuid -> contents.clone());
+        @NonNull val inventories = this.inventoryCache.computeIfAbsent(playerUniqueId, uuid -> new ItemStack[contents.length]);
 
         for (int i = 0; i < contents.length; i++) {
             @Nullable val itemStack = contents[i];
@@ -43,7 +43,7 @@ public final class InventoryCache {
             }
         }
 
-        @NonNull val armors = this.armorCache.computeIfAbsent(playerUniqueId, uuid -> armorContents.clone());
+        @NonNull val armors = this.armorCache.computeIfAbsent(playerUniqueId, uuid -> new ItemStack[armorContents.length]);
 
         for (int i = 0; i < armorContents.length; i++) {
             @Nullable val itemStack = armorContents[i];

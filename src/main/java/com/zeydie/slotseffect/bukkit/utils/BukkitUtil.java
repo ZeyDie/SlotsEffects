@@ -10,10 +10,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Random;
 
 public final class BukkitUtil {
+    private static final @NotNull Random random = new Random();
+
     @Getter
     private static final @NotNull List<PotionEffectType> effects = List.of(PotionEffectType.values());
+
+    public static boolean isGoodRandom(final double chance) {
+        return random.nextDouble() < chance;
+    }
 
     public static void runTaskLater(@NonNull final Runnable runnable) {
         runTaskLater(runnable, 1);

@@ -1,15 +1,18 @@
 package com.zeydie.slotseffect.bukkit.listeners;
 
+import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.Nullable;
 
 public class EntityListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
@@ -25,6 +28,18 @@ public class EntityListener implements Listener {
                     () -> {
                         ItemEffects.applyAtackerEffects(attackerLivingEntity, activeItem, attackerLivingEntity.getActiveItemHand());
                         ItemEffects.applyVictimEffects(victimLivingEntity, activeItem);
+
+                        if (victimLivingEntity instanceof Player victimPlayer) {
+                            @NonNull val inventory = victimPlayer.getInventory();
+                            @NonNull val armorContents = inventory.getArmorContents();
+
+                            for (int i = 0; i < armorContents.length; i++) {
+                                @Nullable val armorItem = armorContents[i];
+
+                                if (armorItem != null)
+                                    ArmorEffects.applyHitEffects(victimPlayer, armorItem, i);
+                            }
+                        }
                     },
                     1
             );

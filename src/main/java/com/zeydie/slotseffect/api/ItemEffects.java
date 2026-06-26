@@ -1,6 +1,6 @@
 package com.zeydie.slotseffect.api;
 
-import com.zeydie.slotseffect.bukkit.data.ActiveEffectSlot;
+import com.zeydie.slotseffect.bukkit.data.objects.ActiveEffectSlot;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
@@ -60,6 +60,8 @@ public final class ItemEffects {
     public static void applyEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
         BukkitUtil.runTaskLater(
                 () -> {
+                    SlotsEffect.getInstance().logger().info("getStaticEffects: " + itemstack + " " + slot);
+
                     for (@NonNull val potionEffect : getStaticEffects(itemstack, slot)) {
                         @NonNull val effect = new ActiveEffectSlot("SLOT_" + slot, potionEffect);
 
@@ -185,7 +187,7 @@ public final class ItemEffects {
                 for (@NonNull val data : effectData.getAttackerEffects()) {
                     @NonNull val effect = data.createPotionEffect();
 
-                    if (effect != null)
+                    if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
                         potionEffects.add(effect);
                 }
             }
@@ -216,7 +218,7 @@ public final class ItemEffects {
                 for (@NonNull val data : effectData.getVictimEffects()) {
                     @NonNull val effect = data.createPotionEffect();
 
-                    if (effect != null)
+                    if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
                         potionEffects.add(effect);
                 }
             }

@@ -1,4 +1,4 @@
-package com.zeydie.slotseffect.bukkit.data;
+package com.zeydie.slotseffect.bukkit.data.objects;
 
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.val;
@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 public record PotionEffectData
         (
+                double chance,
                 @NotNull String type,
                 int amplifier,
                 int duration

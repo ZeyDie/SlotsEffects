@@ -2,10 +2,10 @@ package com.zeydie.slotseffect.mountcore.modules;
 
 import com.google.common.collect.Maps;
 import com.zeydie.sgson.SGsonFile;
-import com.zeydie.slotseffect.bukkit.data.ArmorEffectData;
-import com.zeydie.slotseffect.bukkit.data.ArmorSetEffectData;
-import com.zeydie.slotseffect.bukkit.data.ItemEffectData;
-import com.zeydie.slotseffect.bukkit.data.PotionEffectData;
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
+import com.zeydie.slotseffect.bukkit.data.items.ItemEffectData;
+import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.Getter;
@@ -76,9 +76,9 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
             if (Files.list(this.itemsPath).count() == 0) {
                 @NonNull val example = new ItemEffectData();
 
-                example.setComponent(new NamespacedKey("namespace", "key"));
+                example.setComponent(new NamespacedKey("namespace", "diamond"));
                 example.setSlots(List.of("ALL"));
-                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
+                example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
 
                 SGsonFile.createPretty(this.itemsPath.resolve("example.json")).writeJsonFile(example);
             }
@@ -88,8 +88,9 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                 @NonNull val equipmentSlotsWithComponents = Maps.<EquipmentSlot, NamespacedKey>newHashMap();
 
                 example.setEquipmentSlot(EquipmentSlot.HEAD);
-                example.setComponent(new NamespacedKey("namespace", "key"));
-                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
+                example.setComponent(new NamespacedKey("namespace", "helmet"));
+                example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.HEALTH_BOOST.getName(), 3, 100)));
+                example.setHitEffects(List.of(new PotionEffectData(0.2, PotionEffectType.REGENERATION.getName(), 3, 100)));
 
                 SGsonFile.createPretty(this.armorsPath.resolve("example.json")).writeJsonFile(example);
             }
@@ -98,10 +99,10 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
 
                 @NonNull val equipmentSlotsWithComponents = Maps.<EquipmentSlot, NamespacedKey>newHashMap();
 
-                equipmentSlotsWithComponents.put(EquipmentSlot.HEAD, new NamespacedKey("namespace", "key"));
+                equipmentSlotsWithComponents.put(EquipmentSlot.HEAD, new NamespacedKey("namespace", "helmet"));
 
                 example.setEquipmentSlotsWithComponents(equipmentSlotsWithComponents);
-                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
+                example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
 
                 SGsonFile.createPretty(this.armorsetsPath.resolve("example.json")).writeJsonFile(example);
             }
@@ -163,6 +164,8 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
 
     @Override
     public void shutdown() {
-
+        this.itemsEffects.clear();
+        this.armorEffects.clear();
+        this.armorSetsEffects.clear();
     }
 }

@@ -1,5 +1,6 @@
 package com.zeydie.slotseffect.bukkit.data;
 
+import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,4 @@ public class EffectData {
     private @Nullable List<String> comments;
 
     private @Nullable List<PotionEffectData> staticEffects;
-    private @Nullable List<PotionEffectData> attackerEffects;
-    private @Nullable List<PotionEffectData> victimEffects;
 }
