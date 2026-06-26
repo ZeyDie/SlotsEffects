@@ -1,7 +1,6 @@
 package com.zeydie.slotseffect.bukkit.data;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.EquipmentSlot;

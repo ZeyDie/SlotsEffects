@@ -1,7 +1,6 @@
 package com.zeydie.slotseffect.bukkit.data;
 
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
-import lombok.NonNull;
 import lombok.val;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;

@@ -1,6 +1,6 @@
 package com.zeydie.slotseffect.bukkit.cache;
 
-import com.zeydie.slotseffect.bukkit.handlers.inventory.InventoryHandler;
+import com.zeydie.slotseffect.api.ItemEffects;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
@@ -27,7 +27,7 @@ public final class InventoryCache {
 
             if (items.get(i) != null && !items.get(i).equals(itemStack)) {
                 items.set(i, itemStack);
-                InventoryHandler.getInstance().updateStaticItem(player, itemStack);
+                ItemEffects.applyEffects(player, itemStack, i);
             }
         }
 
@@ -36,7 +36,7 @@ public final class InventoryCache {
 
             if (items.get(i) != null && !items.get(i).equals(itemStack)) {
                 items.set(i, itemStack);
-                InventoryHandler.getInstance().updateStaticItem(player, itemStack);
+                ItemEffects.applyEffects(player, itemStack, i);
             }
         }
 

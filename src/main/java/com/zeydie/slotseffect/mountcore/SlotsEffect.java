@@ -10,7 +10,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
-import ru.mountcode.plugins.mountcore.api.bootstrap.v1.module.PluginModuleManager;
 import ru.mountcode.plugins.mountcore.api.v3.bukkit.Sender;
 import ru.mountcode.plugins.mountcore.paper.api.bootstrap.v1.MountPlugin;
 

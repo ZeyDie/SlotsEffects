@@ -23,8 +23,8 @@ public class EntityListener implements Listener {
             Bukkit.getScheduler().runTaskLater(
                     SlotsEffect.getInstance(),
                     () -> {
-                        ItemEffects.getAttackerEffects(activeItem).forEach(effect -> attackerLivingEntity.addPotionEffect(effect));
-                        ItemEffects.getVictimEffects(activeItem).forEach(effect -> victimLivingEntity.addPotionEffect(effect));
+                        ItemEffects.applyAtackerEffects(attackerLivingEntity, activeItem, attackerLivingEntity.getActiveItemHand());
+                        ItemEffects.applyVictimEffects(victimLivingEntity, activeItem);
                     },
                     1
             );

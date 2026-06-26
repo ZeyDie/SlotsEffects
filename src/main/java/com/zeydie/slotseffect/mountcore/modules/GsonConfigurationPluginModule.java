@@ -1,6 +1,5 @@
 package com.zeydie.slotseffect.mountcore.modules;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zeydie.sgson.SGsonFile;
 import com.zeydie.slotseffect.bukkit.data.*;

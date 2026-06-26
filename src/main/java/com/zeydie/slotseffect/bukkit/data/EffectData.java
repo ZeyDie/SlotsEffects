@@ -1,7 +1,6 @@
 package com.zeydie.slotseffect.bukkit.data;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
