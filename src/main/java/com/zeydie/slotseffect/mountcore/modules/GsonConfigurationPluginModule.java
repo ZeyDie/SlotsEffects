@@ -74,7 +74,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
 
                 example.setComponent(new NamespacedKey("namespace", "key"));
                 example.setSlots(List.of("ALL"));
-                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
+                example.setStaticEffects(List.of(new PotionEffectData(PotionEffectType.SPEED, 3, PotionEffect.INFINITE_DURATION)));
 
                 SGsonFile.createPretty(this.itemsPath.resolve("example.json")).writeJsonFile(example);
             }

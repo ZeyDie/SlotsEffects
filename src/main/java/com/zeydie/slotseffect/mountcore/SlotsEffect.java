@@ -4,8 +4,6 @@ import com.zeydie.slotseffect.bukkit.listeners.EntityListener;
 import com.zeydie.slotseffect.bukkit.tasks.InventoryTask;
 import com.zeydie.slotseffect.mountcore.modules.GsonConfigurationPluginModule;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -22,7 +20,7 @@ public final class SlotsEffect extends MountPlugin {
     private final PluginManager pluginManager = this.getServer().getPluginManager();
 
     @Getter
-    private GsonConfigurationPluginModule configurationModule ;
+    private GsonConfigurationPluginModule configurationModule;
     //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
 
     private final EntityListener playerListener = new EntityListener();
@@ -42,18 +40,13 @@ public final class SlotsEffect extends MountPlugin {
 
         this.pluginManager.registerEvents(this.playerListener, this);
 
-        //TODO Bukkit
-        @NonNull val scheduler = Bukkit.getScheduler();
-
-        scheduler.runTaskTimer(
-                this,
-                () -> {
-                    for (@NonNull val player : Bukkit.getOnlinePlayers())
-                        scheduler.runTaskAsynchronously(this, () -> new InventoryTask(player));
-                },
-                0,
-                20);
-        //TODO
+        Bukkit.getScheduler()
+                .runTaskTimer(
+                        this,
+                        new InventoryTask(),
+                        0,
+                        20
+                );
 
         Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }

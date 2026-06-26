@@ -15,18 +15,18 @@ public final class InventoryCache {
     @Getter
     private static final @NotNull InventoryCache instance = new InventoryCache();
 
-    private final @NotNull Map<UUID, List<ItemStack>> cache = new HashMap<>();
+    private final @NotNull Map<UUID, ItemStack[]> cache = new HashMap<>();
 
     public void cache(@NonNull final Player player) {
-        @NonNull val items = this.cache.getOrDefault(player.getUniqueId(), new LinkedList<>());
-
         @NonNull val inventory = player.getInventory();
+
+        @NonNull val items = this.cache.computeIfAbsent(player.getUniqueId(), uuid -> new ItemStack[inventory.getSize()]);
 
         for (int i = 0; i < inventory.getContents().length; i++) {
             @Nullable val itemStack = inventory.getContents()[i];
 
-            if (items.get(i) != null && !items.get(i).equals(itemStack)) {
-                items.set(i, itemStack);
+            if (items[i] != null && !items[i].isSimilar(itemStack)) {
+                items[i] = itemStack;
                 ItemEffects.applyEffects(player, itemStack, i);
             }
         }
@@ -34,8 +34,8 @@ public final class InventoryCache {
         for (int i = 0; i < inventory.getArmorContents().length; i++) {
             @Nullable val itemStack = inventory.getArmorContents()[i];
 
-            if (items.get(i) != null && !items.get(i).equals(itemStack)) {
-                items.set(i, itemStack);
+            if (items[i] != null && !items[i].isSimilar(itemStack)) {
+                items[i] = itemStack;
                 ItemEffects.applyEffects(player, itemStack, i);
             }
         }
