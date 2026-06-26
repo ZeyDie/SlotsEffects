@@ -2,16 +2,16 @@ package com.zeydie.slotseffect.bukkit.listeners;
 
 import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
+import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import lombok.NonNull;
 import lombok.val;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityListener implements Listener {
@@ -20,16 +20,26 @@ public class EntityListener implements Listener {
         @NonNull val attacker = event.getDamager();
         @NonNull val victim = event.getEntity();
 
-        if (!event.isCancelled() && attacker instanceof final LivingEntity attackerLivingEntity && victim instanceof final LivingEntity victimLivingEntity) {
-            @NonNull val activeItem = attackerLivingEntity.getActiveItem();
+        if (!event.isCancelled() && attacker instanceof final Player attackerPlayer && victim instanceof final LivingEntity victimLivingEntity) {
+            @NonNull val itemInHand = attackerPlayer.getItemInHand();
 
-            Bukkit.getScheduler().runTaskLater(
-                    SlotsEffect.getInstance(),
+            BukkitUtil.runTaskAsynchronously(
                     () -> {
-                        ItemEffects.applyAtackerEffects(attackerLivingEntity, activeItem, attackerLivingEntity.getActiveItemHand());
-                        ItemEffects.applyVictimEffects(victimLivingEntity, activeItem);
+                        ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, attackerPlayer.getActiveItemHand());
+                        ItemEffects.applyVictimEffects(victimLivingEntity, itemInHand);
+                    }
+            );
+        }
+    }
 
-                        if (victimLivingEntity instanceof Player victimPlayer) {
+    @EventHandler(priority = EventPriority.MONITOR)
+    private void onDamagedEntity(@NonNull final EntityDamageEvent event) {
+        @NonNull val victim = event.getEntity();
+
+        if (!event.isCancelled() && victim instanceof final LivingEntity victimLivingEntity) {
+            BukkitUtil.runTaskAsynchronously(
+                    () -> {
+                        if (victimLivingEntity instanceof final Player victimPlayer) {
                             @NonNull val inventory = victimPlayer.getInventory();
                             @NonNull val armorContents = inventory.getArmorContents();
 
@@ -40,8 +50,7 @@ public class EntityListener implements Listener {
                                     ArmorEffects.applyHitEffects(victimPlayer, armorItem, i);
                             }
                         }
-                    },
-                    1
+                    }
             );
         }
     }

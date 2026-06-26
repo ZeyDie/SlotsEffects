@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,20 +18,6 @@ import java.util.*;
 
 public final class ItemEffects {
     private static @NotNull Map<UUID, List<ActiveEffectSlot>> activeEffectSlots = new HashMap<>();
-
-    public static void applyEffect(@NonNull final Player player, @NonNull final PotionEffect potionEffect) {
-        player.addPotionEffect(potionEffect, true);
-
-        //if (potionEffect.getDuration() <= PotionEffect.INFINITE_DURATION) BukkitUtil.runTaskLater(() -> removeEffect(player, potionEffect), potionEffect.getDuration());
-    }
-
-    public static void removeEffect(@NonNull final Player player, @NonNull final PotionEffect potionEffect) {
-        player.removePotionEffect(potionEffect.getType());
-    }
-
-    public static void removeEffect(@NonNull final Player player, @NonNull final PotionEffectType potionEffectType) {
-        player.removePotionEffect(potionEffectType);
-    }
 
     public static void protectInventorySlot(@NonNull final Player player, @Nullable final ItemStack itemstack, final int slot) {
         @NonNull val activeEffects = activeEffectSlots.getOrDefault(player.getUniqueId(), new ArrayList<>());
@@ -48,11 +33,11 @@ public final class ItemEffects {
             if (optional.isPresent()) {
                 @NonNull val slotEffect = optional.get();
 
-                BukkitUtil.runTaskLater(() -> removeEffect(player, slotEffect.potionEffect()));
+                Effects.removeEffect(player, slotEffect.potionEffect());
 
                 activeEffects.remove(slotEffect);
 
-                SlotsEffect.getInstance().logger().info("Slot " + slot + " is protected");
+                SlotsEffect.getInstance().logger().debug("Slot " + slot + " is protected");
             }
         }
     }
@@ -60,16 +45,21 @@ public final class ItemEffects {
     public static void applyEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
         BukkitUtil.runTaskLater(
                 () -> {
-                    SlotsEffect.getInstance().logger().info("getStaticEffects: " + itemstack + " " + slot);
+                    SlotsEffect.getInstance().logger().debug("getStaticEffects: " + itemstack + " " + slot);
 
-                    for (@NonNull val potionEffect : getStaticEffects(itemstack, slot)) {
+                    @NonNull val staticEffects = getStaticEffects(player, itemstack, slot);
+
+                    if (staticEffects.isEmpty())
+                        return;
+
+                    for (@NonNull val potionEffect : staticEffects) {
                         @NonNull val effect = new ActiveEffectSlot("SLOT_" + slot, potionEffect);
 
                         @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
 
                         if (activeEffects.isEmpty()) {
                             activeEffects.add(effect);
-                            applyEffect(player, potionEffect);
+                            Effects.applyEffect(player, potionEffect);
                         } else {
                             @NonNull val optional = activeEffects.stream()
                                     .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
@@ -81,21 +71,31 @@ public final class ItemEffects {
                                 if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
                                     player.removePotionEffect(potionEffect.getType());
                             } else {
-                                applyEffect(player, potionEffect);
-                                SlotsEffect.getInstance().logger().info("Apply effect " + potionEffect.getType().getName());
+                                Effects.applyEffect(player, potionEffect);
+                                SlotsEffect.getInstance().logger().debug("Apply effect " + potionEffect.getType().getName());
                             }
                         }
                     }
+
+                    staticEffects.clear();
                 }
         );
     }
 
-    public static void applyAtackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
+    public static void applyAttackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         BukkitUtil.runTaskLater(
                 () -> {
-                    if (attackerLivingEntity instanceof final Player player)
-                        for (@NonNull val potionEffect : getAttackerEffects(itemstack, equipmentSlot))
-                            applyEffect(player, potionEffect);
+                    if (attackerLivingEntity instanceof final Player player) {
+                        @NonNull val attackerEffects = getAttackerEffects(itemstack, equipmentSlot);
+
+                        if (attackerEffects.isEmpty())
+                            return;
+
+                        for (@NonNull val potionEffect : attackerEffects)
+                            Effects.applyEffect(player, potionEffect);
+
+                        attackerEffects.clear();
+                    }
                 }
         );
     }
@@ -103,14 +103,22 @@ public final class ItemEffects {
     public static void applyVictimEffects(@NonNull final LivingEntity victimLivingEntity, @NonNull final ItemStack itemstack) {
         BukkitUtil.runTaskLater(
                 () -> {
-                    if (victimLivingEntity instanceof final Player player)
-                        for (@NonNull val potionEffect : getVictimEffects(itemstack))
-                            applyEffect(player, potionEffect);
+                    if (victimLivingEntity instanceof final Player player) {
+                        @NonNull val victimEffects = getVictimEffects(itemstack);
+
+                        if (victimEffects.isEmpty())
+                            return;
+
+                        for (@NonNull val potionEffect : victimEffects)
+                            Effects.applyEffect(player, potionEffect);
+
+                        victimEffects.clear();
+                    }
                 }
         );
     }
 
-    private static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
+    private static @NotNull List<PotionEffect> getStaticEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
         if (components.isEmpty())
@@ -130,6 +138,10 @@ public final class ItemEffects {
 
             for (@NonNull val effectData : effects) {
                 @Nullable val slots = effectData.getSlots();
+
+                if (slots.contains(EquipmentSlot.HAND.name()) || slots.contains(EquipmentSlot.OFF_HAND.name()))
+                    if (player.getInventory().getHeldItemSlot() != slot)
+                        continue;
 
                 if (
                         slots != null && (
@@ -152,7 +164,7 @@ public final class ItemEffects {
         return potionEffects;
     }
 
-    public static @NotNull List<PotionEffect> getAttackerEffects(@NonNull final ItemStack itemstack, @Nullable final EquipmentSlot equipmentSlot) {
+    private static @NotNull List<PotionEffect> getAttackerEffects(@NonNull final ItemStack itemstack, @Nullable final EquipmentSlot equipmentSlot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
         if (components.isEmpty())
@@ -196,7 +208,7 @@ public final class ItemEffects {
         return potionEffects;
     }
 
-    public static @NotNull List<PotionEffect> getVictimEffects(@NonNull final ItemStack itemstack) {
+    private static @NotNull List<PotionEffect> getVictimEffects(@NonNull final ItemStack itemstack) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
         if (components.isEmpty())

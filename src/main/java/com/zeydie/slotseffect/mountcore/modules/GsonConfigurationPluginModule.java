@@ -77,8 +77,10 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                 @NonNull val example = new ItemEffectData();
 
                 example.setComponent(new NamespacedKey("namespace", "diamond"));
-                example.setSlots(List.of("ALL"));
+                example.setSlots(List.of(EquipmentSlot.HAND.name()));
                 example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.SPEED.getName(), 3, PotionEffect.INFINITE_DURATION)));
+                example.setVictimEffects(List.of(new PotionEffectData(0.5, PotionEffectType.BLINDNESS.getName(), 3, 60)));
+                example.setAttackerEffects(List.of(new PotionEffectData(0.7, PotionEffectType.STRENGTH.getName(), 3, 60)));
 
                 SGsonFile.createPretty(this.itemsPath.resolve("example.json")).writeJsonFile(example);
             }
