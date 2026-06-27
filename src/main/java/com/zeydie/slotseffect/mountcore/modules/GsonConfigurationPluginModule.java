@@ -72,7 +72,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
     @Override
     public void enable() {
         try {
-            SlotsEffect.getInstance().logger().info("GsonConfigurationPluginModule enabled");
+            MountUtil.getLogger().info("GsonConfigurationPluginModule enabled");
 
             if (Files.list(this.itemsPath).count() == 0) {
                 @NonNull val example = new ItemEffectData();
@@ -103,9 +103,11 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                 @NonNull val equipmentSlotsWithComponents = Maps.<EquipmentSlot, NamespacedKey>newHashMap();
 
                 equipmentSlotsWithComponents.put(EquipmentSlot.HEAD, new NamespacedKey("namespace", "helmet"));
+                equipmentSlotsWithComponents.put(EquipmentSlot.CHEST, new NamespacedKey("namespace", "chestplate"));
 
+                example.setComponent(new  NamespacedKey("namespace", "test_fullset"));
                 example.setEquipmentSlotsWithComponents(equipmentSlotsWithComponents);
-                example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.HEALTH_BOOST.getName(), 3, 3)));
+                example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.HERO_OF_THE_VILLAGE.getName(), 3, 60)));
 
                 SGsonFile.createPretty(this.armorsetsPath.resolve("example.json")).writeJsonFile(example);
             }
@@ -115,7 +117,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                     .forEach(
                             path ->
                             {
-                                SlotsEffect.getInstance().logger().info("Loading " + path);
+                                MountUtil.getLogger().info("Loading " + path);
 
                                 @NonNull val itemEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ItemEffectData());
                                 @NonNull val component = itemEffectData.getComponent();
@@ -133,7 +135,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                     .forEach(
                             path ->
                             {
-                                SlotsEffect.getInstance().logger().info("Loading " + path);
+                                MountUtil.getLogger().info("Loading " + path);
 
                                 @NonNull val armorEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorEffectData());
                                 @NonNull val component = armorEffectData.getComponent();
@@ -142,7 +144,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                                 if (list.isEmpty() || list.stream().noneMatch(effectData -> effectData.getUuid().equals(armorEffectData.getUuid())))
                                     list.add(armorEffectData);
 
-                                this.armorEffects.put(armorEffectData.getComponent(), list);
+                                this.armorEffects.put(component, list);
                             }
                     );
 
@@ -151,16 +153,16 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                     .forEach(
                             path ->
                             {
-                                SlotsEffect.getInstance().logger().info("Loading " + path);
+                                MountUtil.getLogger().info("Loading " + path);
 
                                 @NonNull val armorSetEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorSetEffectData());
-
-                                @NonNull val list = this.armorSetsEffects.getOrDefault(armorSetEffectData, new ArrayList<>());
+                                @NonNull val component = armorSetEffectData.getComponent();
+                                @NonNull val list = this.armorSetsEffects.computeIfAbsent(component, key -> new ArrayList<>());
 
                                 if (list.isEmpty() || list.stream().noneMatch(effectData -> effectData.getUuid().equals(armorSetEffectData.getUuid())))
                                     list.add(armorSetEffectData);
 
-                                //this.armorSetsEffects.put(armorSetEffectData., list);
+                                this.armorSetsEffects.put(component, list);
                             }
                     );
         } catch (final Exception exception) {

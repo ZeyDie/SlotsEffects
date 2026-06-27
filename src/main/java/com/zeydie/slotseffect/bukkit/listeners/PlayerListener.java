@@ -16,24 +16,18 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerQuit(@NonNull final PlayerQuitEvent event) {
-        @NonNull val player = event.getPlayer();
-
-        ArmorEffects.cleanup(player);
-        ItemEffects.cleanup(player);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
     public void test(@NonNull final PlayerJoinEvent event) {
         @NonNull val player = event.getPlayer();
 
         @NonNull val itemStack = new ItemStack(Material.DIAMOND, 1);
         @NonNull val head = new ItemStack(Material.CHAINMAIL_HELMET, 1);
+        @NonNull val chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1);
 
         itemStack.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "diamond"), PersistentDataType.STRING, ""));
         head.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "helmet"), PersistentDataType.STRING, ""));
+        chestplate.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "chestplate"), PersistentDataType.STRING, ""));
 
-        player.getInventory().addItem(itemStack, head);
+        player.getInventory().addItem(itemStack, head, chestplate);
         player.updateInventory();
     }
 }

@@ -1,5 +1,6 @@
 package com.zeydie.slotseffect.bukkit.collectors;
 
+import com.zeydie.slotseffect.api.Effects;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -21,28 +22,29 @@ public final class EffectSynchronizer {
         // Удаляем те, которых нет в desired
         for (PotionEffect active : current) {
             PotionEffectType type = active.getType();
-            if (!desired.containsKey(type)) {
+            if (!desired.containsKey(type) && active.getDuration() <= 0) {
                 toRemove.add(type);
             } else {
                 PotionEffect wanted = desired.get(type);
                 // Если amplifier ниже нужного — обновляем
-                if (active.getAmplifier() < wanted.getAmplifier()) {
-                    player.removePotionEffect(type);
-                    player.addPotionEffect(wanted, true);
-                }
+                if (wanted != null)
+                    if (active.getAmplifier() < wanted.getAmplifier()) {
+                        Effects.removeEffect(player, type);
+                        Effects.applyEffect(player, wanted);
+                    }
             }
         }
 
         // Удаляем ненужные
         for (PotionEffectType type : toRemove) {
-            player.removePotionEffect(type);
+            Effects.removeEffect(player, type);
         }
 
         // Добавляем/обновляем нужные
         for (PotionEffect wanted : desired.values()) {
             if (!player.hasPotionEffect(wanted.getType()) ||
                     player.getPotionEffect(wanted.getType()).getAmplifier() < wanted.getAmplifier()) {
-                player.addPotionEffect(wanted, true);
+                Effects.applyEffect(player, wanted);
             }
         }
     }

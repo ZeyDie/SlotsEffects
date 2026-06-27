@@ -15,6 +15,8 @@ import java.util.Map;
 @Setter
 @Getter
 public class ArmorSetEffectData extends EffectData {
+    private @NotNull NamespacedKey component;
+
     private @NotNull Map<EquipmentSlot, NamespacedKey> equipmentSlotsWithComponents;
 
     private @Nullable List<PotionEffectData> hitEffects = List.of();

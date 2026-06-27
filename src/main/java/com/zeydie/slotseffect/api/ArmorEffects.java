@@ -1,13 +1,17 @@
 package com.zeydie.slotseffect.api;
 
-import com.zeydie.slotseffect.bukkit.data.objects.ActiveEffectSlot;
+import com.zeydie.slotseffect.bukkit.collectors.EffectCollector;
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
+import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -16,22 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public final class ArmorEffects {
-    private static @NotNull Map<UUID, List<ActiveEffectSlot>> activeEffectSlots = new HashMap<>();
-
-    public static void cleanup() {
-        activeEffectSlots.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
-    }
-
-    public static void cleanup(@NonNull final Player player) {
-        cleanup(player.getUniqueId());
-    }
-
-    public static void cleanup(@NonNull final UUID playerUniqueId) {
-        activeEffectSlots.keySet().remove(playerUniqueId);
-    }
-
     public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        SlotsEffect.getInstance().logger().debug("getHitEffects: " + itemstack + " " + slot);
+        MountUtil.getLogger().debug("getHitEffects: " + itemstack + " " + slot);
 
         @NonNull val hitEffects = getHitEffects(itemstack, slot);
 
@@ -42,44 +32,15 @@ public final class ArmorEffects {
             @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
 
             if (armorSlot == null) {
-                SlotsEffect.getInstance().logger().debug("Armor slot " + slot + " is null");
+                MountUtil.getLogger().debug("Armor slot " + slot + " is null");
                 return;
             }
 
-            @NonNull val effect = new ActiveEffectSlot(armorSlot.name(), potionEffect);
-
-            @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
-
-            SlotsEffect.getInstance().logger().debug("==========================");
-            SlotsEffect.getInstance().logger().debug("activeEffects: " + activeEffects);
-            SlotsEffect.getInstance().logger().debug("armorSlot: " + armorSlot);
-
-            @NonNull val list = activeEffects.stream()
-                    .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
-                    .toList();
-
-            for (@NonNull val slotEffect : list) {
-                if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
-                    player.removePotionEffect(potionEffect.getType());
-
-                if (player.hasPotionEffect(potionEffect.getType()))
-                    activeEffects.remove(effect);
-            }
-
-            activeEffects.add(effect);
             Effects.applyEffect(player, potionEffect);
-            SlotsEffect.getInstance().logger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
+            MountUtil.getLogger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
         }
 
         hitEffects.clear();
-    }
-
-    public static void applyArmorSets(@NotNull final Player player) {
-        @NonNull val armorSetEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getArmorSetsEffects();
-
-
     }
 
     public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {

@@ -17,8 +17,6 @@ public final class SlotsEffect extends MountPlugin {
     @Getter
     private static SlotsEffect instance;
 
-    private final @NotNull InventoryTask inventoryTask = new InventoryTask();
-
     private final @NotNull PluginManager pluginManager = this.getServer().getPluginManager();
 
     @Getter
@@ -27,6 +25,8 @@ public final class SlotsEffect extends MountPlugin {
 
     private final @NotNull EntityListener entityListener = new EntityListener();
     private final @NotNull PlayerListener playerListener = new PlayerListener();
+
+    private final @NotNull InventoryTask inventoryTask = new InventoryTask();
 
     @Override
     public void construct() {

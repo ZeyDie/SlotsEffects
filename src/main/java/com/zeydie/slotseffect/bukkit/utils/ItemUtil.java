@@ -37,7 +37,7 @@ public final class ItemUtil {
         return components;
     }
 
-    private static void addComponents(@NonNull final ItemStack item, @NonNull final Map<NamespacedKey, Integer> map) {
+    private static void addComponents(@Nullable final ItemStack item, @NonNull final Map<NamespacedKey, Integer> map) {
         if (item == null)
             return;
 

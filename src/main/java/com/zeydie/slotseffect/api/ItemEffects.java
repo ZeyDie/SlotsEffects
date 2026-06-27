@@ -1,6 +1,5 @@
 package com.zeydie.slotseffect.api;
 
-import com.zeydie.slotseffect.bukkit.data.objects.ActiveEffectSlot;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
@@ -18,20 +17,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public final class ItemEffects {
-    private static @NotNull Map<UUID, List<ActiveEffectSlot>> activeEffectSlots = new HashMap<>();
-
-    public static void cleanup() {
-        activeEffectSlots.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
-    }
-
-    public static void cleanup(@NonNull final Player player) {
-        cleanup(player.getUniqueId());
-    }
-
-    public static void cleanup(@NonNull final UUID playerUniqueId) {
-        activeEffectSlots.keySet().remove(playerUniqueId);
-    }
-
     public static void applyAttackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         if (attackerLivingEntity instanceof final Player player) {
             @NonNull val attackerEffects = getAttackerEffects(itemstack, equipmentSlot);

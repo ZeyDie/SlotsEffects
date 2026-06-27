@@ -13,6 +13,10 @@ public final class MountUtil {
         return module.getPlugin().logger();
     }
 
+    public static @NotNull Logger getLogger() {
+        return SlotsEffect.getInstance().logger();
+    }
+
     public static @NotNull Path getPluginDirectory(@NonNull final PluginModule module) {
         return SlotsEffect.getInstance().getPluginDirectory();//return module.getPlugin().getPluginDirectory();
     }
