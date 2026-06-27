@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ArmorEffectLoader {
-    @SuppressWarnings("unchecked")
     public static ArmorEffectData load(@NonNull final Path path) {
         Yaml yaml = new Yaml();
 

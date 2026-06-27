@@ -71,9 +71,6 @@ public final class EffectCollector {
         }
     }
 
-    /**
-     * СТРОГАЯ проверка по слотам
-     */
     private static boolean isArmorSetComplete(@NonNull Player player, @NonNull ArmorSetEffectData setData) {
         @NonNull val required = setData.getEquipmentSlotsWithComponents();
         if (required.isEmpty()) return false;

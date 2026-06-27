@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class EffectSynchronizer {
-
     private static final Map<UUID, Set<PotionEffectType>> managedEffects = new ConcurrentHashMap<>();
 
     public static void synchronize(@NonNull Player player, Map<PotionEffectType, PotionEffect> desired) {
@@ -23,7 +22,6 @@ public final class EffectSynchronizer {
 
         Set<PotionEffectType> newlyAppliedThisTick = new HashSet<>();
 
-        // 1. Обработка желаемых эффектов
         for (PotionEffect wanted : desired.values()) {
             PotionEffectType type = wanted.getType();
             PotionEffect current = player.getPotionEffect(type);
@@ -38,21 +36,18 @@ public final class EffectSynchronizer {
 
             if (shouldApply) {
                 Effects.applyEffect(player, wanted);
-                newlyAppliedThisTick.add(type);   // ← Только здесь помечаем как managed
+                newlyAppliedThisTick.add(type);
             } else if (currentlyManaged.contains(type)) {
-                // Если эффект уже был managed нами — продолжаем его считать managed
                 newlyAppliedThisTick.add(type);
             }
         }
 
-        // 2. Удаляем только те эффекты, которые были managed нами и сейчас не нужны
         for (PotionEffectType type : currentlyManaged) {
             if (!newlyAppliedThisTick.contains(type) && player.hasPotionEffect(type)) {
                 Effects.removeEffect(player, type);
             }
         }
 
-        // Обновляем список managed эффектов
         currentlyManaged.clear();
         currentlyManaged.addAll(newlyAppliedThisTick);
     }

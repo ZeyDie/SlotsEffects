@@ -18,6 +18,6 @@ public final class MountUtil {
     }
 
     public static @NotNull Path getPluginDirectory(@NonNull final PluginModule module) {
-        return SlotsEffect.getInstance().getPluginDirectory();//return module.getPlugin().getPluginDirectory();
+        return SlotsEffect.getInstance().getPluginDirectory();
     }
 }

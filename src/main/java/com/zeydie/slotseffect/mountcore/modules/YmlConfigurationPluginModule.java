@@ -100,7 +100,6 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
                                     this.itemsEffects.put(component, list);
                                 } catch (final Exception exception) {
                                     MountUtil.getLogger().error("Failed to load " + path, exception);
-                                    exception.printStackTrace();
                                 }
                             }
                     );

@@ -21,7 +21,6 @@ public final class SlotsEffect extends MountPlugin {
 
     @Getter
     private YmlConfigurationPluginModule configurationModule;
-    //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
 
     private final @NotNull EntityListener entityListener = new EntityListener();
     private final @NotNull PlayerListener playerListener = new PlayerListener();
@@ -30,7 +29,6 @@ public final class SlotsEffect extends MountPlugin {
 
     @Override
     public void construct() {
-        this.getModuleManager().registerTranslationModule();
     }
 
     @Override
@@ -45,43 +43,15 @@ public final class SlotsEffect extends MountPlugin {
         this.pluginManager.registerEvents(this.playerListener, this);
 
         this.inventoryTask.runTaskTimer(this, 0, 20);
-
-        //TEST
-        /*this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("slot")
-                    .executes(ctx -> {
-                        CommandSender sender = ctx.getSource().getSender();
-
-                        if (!(sender instanceof Player player)) {
-                            sender.sendMessage("§cКоманда только для игроков!");
-                            return 0;
-                        }
-
-                        ItemStack item = player.getInventory().getItemInMainHand();
-
-                        if (item == null || item.getType().isAir()) {
-                            player.sendMessage("§cВозьми предмет в руку!");
-                            return 0;
-                        }
-
-                        player.sendMessage("§6=== Компоненты предмета §e" + item.getType() + " §6===");
-                        debugComponents(item, player);
-                        return Command.SINGLE_SUCCESS;
-                    })
-                    .build();
-
-            commands.registrar().register(buildCommand);
-        });*/
-
-        Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }
 
     @Override
     public void shutdown() {
-        Sender.sendConsole(Component.translatable(ID + ".disabled"));
+        this.configurationModule.shutdown();
     }
 
     @Override
     public void reload() {
+        this.configurationModule.reload();
     }
 }

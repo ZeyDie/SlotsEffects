@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ItemEffectLoader {
-    @SuppressWarnings("unchecked")
     public static ItemEffectData load(@NonNull final Path path) {
         Yaml yaml = new Yaml();
 

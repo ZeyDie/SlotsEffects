@@ -15,15 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class ItemUtil {
-    // Паттерн для поиска компонентов в формате {key: "...", namespace: "..."}
     private static final Pattern COMPONENT_PATTERN = Pattern.compile(
             "key:\\s*\"([^\"]+)\"\\s*,\\s*namespace:\\s*\"([^\"]+)\"",
             Pattern.CASE_INSENSITIVE
     );
 
-    /**
-     * Проверяет наличие компонента
-     */
     public static boolean hasComponent(@NonNull final ItemStack itemstack, @NonNull final NamespacedKey component) {
         if (itemstack == null || !itemstack.hasItemMeta()) return false;
 
@@ -46,9 +42,6 @@ public final class ItemUtil {
         return false;
     }
 
-    /**
-     * Возвращает все компоненты
-     */
     public static @NotNull Set<NamespacedKey> getComponents(@NonNull final ItemStack itemstack) {
         Set<NamespacedKey> keys = new HashSet<>();
 
@@ -57,7 +50,6 @@ public final class ItemUtil {
         String componentString = itemstack.getItemMeta().getAsComponentString();
         if (componentString == null) return keys;
 
-        //System.out.println("componentString: " + componentString); // для отладки
 
         Matcher matcher = COMPONENT_PATTERN.matcher(componentString);
 
@@ -66,37 +58,10 @@ public final class ItemUtil {
             String namespace = matcher.group(2);
 
             keys.add(new NamespacedKey(namespace, key));
-            //System.out.println("Found component: " + namespace + ":" + key);
         }
 
         return keys;
     }
-
-    /**
-     * Дебаг-метод
-     */
-    public static void debugComponents(@NonNull final ItemStack itemstack, @NonNull Player player) {
-        if (itemstack == null || itemstack.getType().isAir()) {
-            player.sendMessage("§cПредмет пустой");
-            return;
-        }
-
-        Set<NamespacedKey> keys = getComponents(itemstack);
-
-        player.sendMessage("§6=== Компоненты §e" + itemstack.getType() + " §6===");
-        if (keys.isEmpty()) {
-            player.sendMessage("§7Нет компонентов");
-            player.sendMessage("§7Строка: §f" + itemstack.getItemMeta().getAsComponentString());
-            return;
-        }
-
-        player.sendMessage("§7Найдено: §f" + keys.size());
-        for (NamespacedKey key : keys) {
-            player.sendMessage(" §8• §b" + key.getNamespace() + "§7:§f" + key.getKey());
-        }
-    }
-
-    // ==================== getArmorComponents ====================
 
     public static @NotNull Map<NamespacedKey, Integer> getArmorComponents(@NotNull final Player player) {
         @NonNull val components = new java.util.HashMap<NamespacedKey, Integer>();
