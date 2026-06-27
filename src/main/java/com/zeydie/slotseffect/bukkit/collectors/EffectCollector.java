@@ -2,9 +2,6 @@ package com.zeydie.slotseffect.bukkit.collectors;
 
 import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
-import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
-import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

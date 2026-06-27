@@ -5,12 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 public final class Effects {
     public static void applyEffect(@NonNull final Player player, @NonNull final PotionEffect potionEffect) {
         player.addPotionEffect(potionEffect, true);

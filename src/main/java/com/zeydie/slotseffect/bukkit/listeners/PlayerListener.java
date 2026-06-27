@@ -2,7 +2,6 @@ package com.zeydie.slotseffect.bukkit.listeners;
 
 import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
-import com.zeydie.slotseffect.bukkit.cache.InventoryCache;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.Material;
@@ -16,16 +15,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 public class PlayerListener implements Listener {
-    /*@EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerJoin(@NonNull final PlayerChangedWorldEvent event) {
-        InventoryCache.getInstance().cache(event.getPlayer());
-    }*/
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(@NonNull final PlayerQuitEvent event) {
         @NonNull val player = event.getPlayer();
 
-        InventoryCache.getInstance().cleanup(player);
         ArmorEffects.cleanup(player);
         ItemEffects.cleanup(player);
     }

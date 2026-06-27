@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class GsonConfigurationPluginModule extends PluginModule implements IReloadableModule {
     @Getter
@@ -117,12 +118,13 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                                 SlotsEffect.getInstance().logger().info("Loading " + path);
 
                                 @NonNull val itemEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ItemEffectData());
-                                @NonNull val list = this.itemsEffects.getOrDefault(itemEffectData, new ArrayList<>());
+                                @NonNull val component = itemEffectData.getComponent();
+                                @NonNull val list = this.itemsEffects.computeIfAbsent(component, key -> new ArrayList<>());
 
                                 if (list.isEmpty() || list.stream().noneMatch(effectData -> effectData.getUuid().equals(itemEffectData.getUuid())))
                                     list.add(itemEffectData);
 
-                                this.itemsEffects.put(itemEffectData.getComponent(), list);
+                                this.itemsEffects.put(component, list);
                             }
                     );
 
@@ -134,7 +136,8 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                                 SlotsEffect.getInstance().logger().info("Loading " + path);
 
                                 @NonNull val armorEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorEffectData());
-                                @NonNull val list = this.armorEffects.getOrDefault(armorEffectData, new ArrayList<>());
+                                @NonNull val component = armorEffectData.getComponent();
+                                @NonNull val list = this.armorEffects.computeIfAbsent(component, key -> new ArrayList<>());
 
                                 if (list.isEmpty() || list.stream().noneMatch(effectData -> effectData.getUuid().equals(armorEffectData.getUuid())))
                                     list.add(armorEffectData);
@@ -151,6 +154,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                                 SlotsEffect.getInstance().logger().info("Loading " + path);
 
                                 @NonNull val armorSetEffectData = SGsonFile.createPretty(path).fromJsonToObject(new ArmorSetEffectData());
+
                                 @NonNull val list = this.armorSetsEffects.getOrDefault(armorSetEffectData, new ArrayList<>());
 
                                 if (list.isEmpty() || list.stream().noneMatch(effectData -> effectData.getUuid().equals(armorSetEffectData.getUuid())))
