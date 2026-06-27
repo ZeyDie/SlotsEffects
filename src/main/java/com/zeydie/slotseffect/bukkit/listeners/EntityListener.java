@@ -11,6 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityListener implements Listener {
@@ -20,9 +21,9 @@ public class EntityListener implements Listener {
         @NonNull val victim = event.getEntity();
 
         if (!event.isCancelled() && attacker instanceof final Player attackerPlayer && victim instanceof final LivingEntity victimLivingEntity) {
-            @NonNull val itemInHand = attackerPlayer.getItemInHand();
+            @NonNull val itemInHand = attackerPlayer.getInventory().getItemInMainHand();
 
-            ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, attackerPlayer.getActiveItemHand());
+            ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, EquipmentSlot.HAND);
             ItemEffects.applyVictimEffects(victimLivingEntity, itemInHand);
         }
     }

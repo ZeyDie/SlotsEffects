@@ -3,6 +3,7 @@ package com.zeydie.slotseffect.bukkit.data.items;
 import com.zeydie.slotseffect.bukkit.data.EffectData;
 import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class ItemEffectData extends EffectData {
     private @NotNull NamespacedKey component;
     private @NotNull List<String> slots = List.of("ALL");

@@ -10,9 +10,11 @@ import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,13 +25,8 @@ public final class EffectCollector {
     public static Map<PotionEffectType, PotionEffect> collect(@NonNull Player player) {
         Map<PotionEffectType, PotionEffect> desired = new HashMap<>();
 
-        // Инвентарь (включая руку)
         collectInventoryEffects(player, desired);
-
-        // Броня
         collectArmorEffects(player, desired);
-
-        // Сеты брони
         collectArmorSetEffects(player, desired);
 
         return desired;
@@ -41,7 +38,7 @@ public final class EffectCollector {
             ItemStack item = contents[slot];
             if (item == null || item.getType().isAir()) continue;
 
-            List<PotionEffect> effects = getStaticItemEffects(player, item, slot);
+            List<PotionEffect> effects = ItemEffects.getStaticEffects(player, item, slot);
             mergeEffects(desired, effects);
         }
     }
@@ -52,7 +49,7 @@ public final class EffectCollector {
             ItemStack item = armor[i];
             if (item == null || item.getType().isAir()) continue;
 
-            List<PotionEffect> effects = getStaticArmorEffects(item, i);
+            List<PotionEffect> effects = ArmorEffects.getStaticEffects(item, i);
             mergeEffects(desired, effects);
         }
     }
@@ -64,12 +61,9 @@ public final class EffectCollector {
 
         if (armorSetEffectsMap.isEmpty()) return;
 
-        // Получаем компоненты брони игрока один раз
-        @NonNull val playerArmorComponents = ItemUtil.getArmorComponents(player);
-
         for (List<ArmorSetEffectData> setList : armorSetEffectsMap.values()) {
             for (@NonNull val setData : setList) {
-                if (isArmorSetComplete(setData, playerArmorComponents)) {
+                if (isArmorSetComplete(player, setData)) {
                     List<PotionEffect> setEffects = getSetStaticEffects(setData);
                     mergeEffects(desired, setEffects);
                 }
@@ -77,30 +71,36 @@ public final class EffectCollector {
         }
     }
 
-    private static boolean isArmorSetComplete(@NonNull ArmorSetEffectData setData,
-                                              @NonNull Map<NamespacedKey, Integer> playerComponents) {
-
+    /**
+     * СТРОГАЯ проверка по слотам
+     */
+    private static boolean isArmorSetComplete(@NonNull Player player, @NonNull ArmorSetEffectData setData) {
         @NonNull val required = setData.getEquipmentSlotsWithComponents();
         if (required.isEmpty()) return false;
 
         for (@NonNull val entry : required.entrySet()) {
-            NamespacedKey requiredComponent = entry.getValue();
+            @NonNull EquipmentSlot slot = entry.getKey();
+            @NonNull NamespacedKey component = entry.getValue();
 
-            // Проверяем наличие компонента на броне (независимо от слота, если не критично)
-            if (!playerComponents.containsKey(requiredComponent)) {
+            ItemStack itemInSlot = getItemInSlot(player, slot);
+
+            if (itemInSlot == null || !ItemUtil.hasComponent(itemInSlot, component)) {
                 return false;
             }
         }
+
         return true;
     }
 
-    private static List<PotionEffect> getStaticItemEffects(Player player, ItemStack item, int slot) {
-        // Используем существующую логику из ItemEffects
-        return ItemEffects.getStaticEffects(player, item, slot);
-    }
-
-    private static List<PotionEffect> getStaticArmorEffects(ItemStack item, int slot) {
-        return ArmorEffects.getStaticEffects(item, slot);
+    private static @Nullable ItemStack getItemInSlot(@NonNull Player player, @NonNull EquipmentSlot slot) {
+        return switch (slot) {
+            case HEAD -> player.getInventory().getHelmet();
+            case CHEST -> player.getInventory().getChestplate();
+            case LEGS -> player.getInventory().getLeggings();
+            case FEET -> player.getInventory().getBoots();
+            case OFF_HAND -> player.getInventory().getItemInOffHand();
+            default -> null;
+        };
     }
 
     private static List<PotionEffect> getSetStaticEffects(@NonNull ArmorSetEffectData setData) {

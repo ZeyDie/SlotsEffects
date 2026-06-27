@@ -1,21 +1,19 @@
 package com.zeydie.slotseffect.bukkit.listeners;
 
-import com.zeydie.slotseffect.api.ArmorEffects;
-import com.zeydie.slotseffect.api.ItemEffects;
+import com.zeydie.slotseffect.bukkit.collectors.EffectSynchronizer;
 import lombok.NonNull;
-import lombok.val;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 
 public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(@NonNull final PlayerQuitEvent event) {
+        EffectSynchronizer.clearPlayerEffects(event.getPlayer());
+    }
+
+    /*@EventHandler(priority = EventPriority.MONITOR)
     public void test(@NonNull final PlayerJoinEvent event) {
         @NonNull val player = event.getPlayer();
 
@@ -23,11 +21,11 @@ public class PlayerListener implements Listener {
         @NonNull val head = new ItemStack(Material.CHAINMAIL_HELMET, 1);
         @NonNull val chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE, 1);
 
-        itemStack.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "diamond"), PersistentDataType.STRING, ""));
-        head.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "helmet"), PersistentDataType.STRING, ""));
-        chestplate.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "chestplate"), PersistentDataType.STRING, ""));
+        itemStack.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "diamond"), PersistentDataType.STRING, "1"));
+        head.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "helmet"), PersistentDataType.STRING, "1"));
+        chestplate.editPersistentDataContainer(persistentDataContainer -> persistentDataContainer.set(new NamespacedKey("namespace", "chestplate"), PersistentDataType.STRING, "1"));
 
         player.getInventory().addItem(itemStack, head, chestplate);
         player.updateInventory();
-    }
+    }*/
 }

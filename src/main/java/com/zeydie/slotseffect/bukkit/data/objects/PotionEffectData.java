@@ -1,6 +1,5 @@
 package com.zeydie.slotseffect.bukkit.data.objects;
 
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.val;
 import org.bukkit.NamespacedKey;

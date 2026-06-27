@@ -5,7 +5,6 @@ import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import lombok.val;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -14,7 +13,8 @@ import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ItemEffects {
     public static void applyAttackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
@@ -65,9 +65,12 @@ public final class ItemEffects {
 
             for (@NonNull val effectData : effects) {
                 @Nullable val slots = effectData.getSlots();
-                
-                if (slots.contains(EquipmentSlot.HAND.name()) || slots.contains(EquipmentSlot.OFF_HAND.name())) {
-                    if (player.getInventory().getHeldItemSlot() != slot)
+
+                if (slots.contains(EquipmentSlot.HAND.name())) {
+                    if (player.getInventory().getItemInMainHand().equals(itemstack))
+                        continue;
+                } else if (slots.contains(EquipmentSlot.OFF_HAND.name())) {
+                    if (!player.getInventory().getItemInOffHand().equals(itemstack))
                         continue;
                 } else if (
                         slots != null && (

@@ -1,23 +1,19 @@
 package com.zeydie.slotseffect.api;
 
-import com.zeydie.slotseffect.bukkit.collectors.EffectCollector;
-import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.NonNull;
 import lombok.val;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ArmorEffects {
     public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {

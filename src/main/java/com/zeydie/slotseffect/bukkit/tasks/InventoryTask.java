@@ -12,5 +12,7 @@ public class InventoryTask extends BukkitRunnable {
     public void run() {
         for (@NonNull Player player : Bukkit.getOnlinePlayers())
             EffectSynchronizer.synchronize(player, EffectCollector.collect(player));
+
+        EffectSynchronizer.cleanup();
     }
 }

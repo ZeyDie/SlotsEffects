@@ -5,16 +5,11 @@ import com.zeydie.sgson.SGsonFile;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.data.items.ItemEffectData;
-import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import com.zeydie.slotseffect.mountcore.utils.MountUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.IMountPlugin;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.module.IReloadableModule;
@@ -25,7 +20,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class GsonConfigurationPluginModule extends PluginModule implements IReloadableModule {
     @Getter
@@ -74,7 +68,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
         try {
             MountUtil.getLogger().info("GsonConfigurationPluginModule enabled");
 
-            if (Files.list(this.itemsPath).count() == 0) {
+            /*if (Files.list(this.itemsPath).count() == 0) {
                 @NonNull val example = new ItemEffectData();
 
                 example.setComponent(new NamespacedKey("namespace", "diamond"));
@@ -110,7 +104,7 @@ public class GsonConfigurationPluginModule extends PluginModule implements IRelo
                 example.setStaticEffects(List.of(new PotionEffectData(1, PotionEffectType.HERO_OF_THE_VILLAGE.getName(), 3, 60)));
 
                 SGsonFile.createPretty(this.armorsetsPath.resolve("example.json")).writeJsonFile(example);
-            }
+            }*/
 
             Files.list(this.itemsPath)
                     .filter(path -> path.toString().endsWith(".json"))

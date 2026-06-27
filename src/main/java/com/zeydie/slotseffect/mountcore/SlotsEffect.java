@@ -3,7 +3,7 @@ package com.zeydie.slotseffect.mountcore;
 import com.zeydie.slotseffect.bukkit.listeners.EntityListener;
 import com.zeydie.slotseffect.bukkit.listeners.PlayerListener;
 import com.zeydie.slotseffect.bukkit.tasks.InventoryTask;
-import com.zeydie.slotseffect.mountcore.modules.GsonConfigurationPluginModule;
+import com.zeydie.slotseffect.mountcore.modules.YmlConfigurationPluginModule;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.plugin.PluginManager;
@@ -20,7 +20,7 @@ public final class SlotsEffect extends MountPlugin {
     private final @NotNull PluginManager pluginManager = this.getServer().getPluginManager();
 
     @Getter
-    private GsonConfigurationPluginModule configurationModule;
+    private YmlConfigurationPluginModule configurationModule;
     //private final ConfigurationPluginModule configurationModule = new ConfigurationPluginModule(this);
 
     private final @NotNull EntityListener entityListener = new EntityListener();
@@ -37,7 +37,7 @@ public final class SlotsEffect extends MountPlugin {
     public void enable() {
         instance = this;
 
-        this.configurationModule = new GsonConfigurationPluginModule(this);
+        this.configurationModule = new YmlConfigurationPluginModule(this);
 
         this.getModuleManager().registerModule(this.configurationModule);
 
@@ -45,6 +45,33 @@ public final class SlotsEffect extends MountPlugin {
         this.pluginManager.registerEvents(this.playerListener, this);
 
         this.inventoryTask.runTaskTimer(this, 0, 20);
+
+        //TEST
+        /*this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("slot")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+
+                        if (!(sender instanceof Player player)) {
+                            sender.sendMessage("§cКоманда только для игроков!");
+                            return 0;
+                        }
+
+                        ItemStack item = player.getInventory().getItemInMainHand();
+
+                        if (item == null || item.getType().isAir()) {
+                            player.sendMessage("§cВозьми предмет в руку!");
+                            return 0;
+                        }
+
+                        player.sendMessage("§6=== Компоненты предмета §e" + item.getType() + " §6===");
+                        debugComponents(item, player);
+                        return Command.SINGLE_SUCCESS;
+                    })
+                    .build();
+
+            commands.registrar().register(buildCommand);
+        });*/
 
         Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }

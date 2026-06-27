@@ -6,46 +6,68 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class EffectSynchronizer {
 
+    private static final Map<UUID, Set<PotionEffectType>> managedEffects = new ConcurrentHashMap<>();
+
     public static void synchronize(@NonNull Player player, Map<PotionEffectType, PotionEffect> desired) {
-        // Текущие эффекты игрока
-        Collection<PotionEffect> current = player.getActivePotionEffects();
+        UUID uuid = player.getUniqueId();
+        Set<PotionEffectType> currentlyManaged = managedEffects
+                .computeIfAbsent(uuid, k -> new HashSet<>());
 
-        Set<PotionEffectType> toRemove = new HashSet<>();
+        Set<PotionEffectType> newlyAppliedThisTick = new HashSet<>();
 
-        // Удаляем те, которых нет в desired
-        for (PotionEffect active : current) {
-            PotionEffectType type = active.getType();
-            if (!desired.containsKey(type) && active.getDuration() <= 0) {
-                toRemove.add(type);
-            } else {
-                PotionEffect wanted = desired.get(type);
-                // Если amplifier ниже нужного — обновляем
-                if (wanted != null)
-                    if (active.getAmplifier() < wanted.getAmplifier()) {
-                        Effects.removeEffect(player, type);
-                        Effects.applyEffect(player, wanted);
-                    }
-            }
-        }
-
-        // Удаляем ненужные
-        for (PotionEffectType type : toRemove) {
-            Effects.removeEffect(player, type);
-        }
-
-        // Добавляем/обновляем нужные
+        // 1. Обработка желаемых эффектов
         for (PotionEffect wanted : desired.values()) {
-            if (!player.hasPotionEffect(wanted.getType()) ||
-                    player.getPotionEffect(wanted.getType()).getAmplifier() < wanted.getAmplifier()) {
+            PotionEffectType type = wanted.getType();
+            PotionEffect current = player.getPotionEffect(type);
+
+            boolean shouldApply = false;
+
+            if (current == null) {
+                shouldApply = true;
+            } else if (current.getAmplifier() < wanted.getAmplifier()) {
+                shouldApply = true;
+            }
+
+            if (shouldApply) {
                 Effects.applyEffect(player, wanted);
+                newlyAppliedThisTick.add(type);   // ← Только здесь помечаем как managed
+            } else if (currentlyManaged.contains(type)) {
+                // Если эффект уже был managed нами — продолжаем его считать managed
+                newlyAppliedThisTick.add(type);
             }
         }
+
+        // 2. Удаляем только те эффекты, которые были managed нами и сейчас не нужны
+        for (PotionEffectType type : currentlyManaged) {
+            if (!newlyAppliedThisTick.contains(type) && player.hasPotionEffect(type)) {
+                Effects.removeEffect(player, type);
+            }
+        }
+
+        // Обновляем список managed эффектов
+        currentlyManaged.clear();
+        currentlyManaged.addAll(newlyAppliedThisTick);
+    }
+
+    public static void clearPlayerEffects(@NonNull Player player) {
+        Set<PotionEffectType> managed = managedEffects.remove(player.getUniqueId());
+        if (managed != null) {
+            for (PotionEffectType type : managed) {
+                Effects.removeEffect(player, type);
+            }
+        }
+    }
+
+    public static void cleanup() {
+        managedEffects.keySet().removeIf(uuid ->
+                !org.bukkit.Bukkit.getOfflinePlayer(uuid).isOnline());
     }
 }

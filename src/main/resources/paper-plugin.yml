@@ -8,6 +8,9 @@ prefix: ${name}
 authors: [ ${authors} ]
 description: ${description}
 website: ${website}
+commands:
+  slots:
+    description: Slots command
 dependencies:
   server:
     MountCore:
