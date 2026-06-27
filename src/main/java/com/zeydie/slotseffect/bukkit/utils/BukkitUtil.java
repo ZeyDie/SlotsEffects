@@ -22,20 +22,8 @@ public final class BukkitUtil {
     @Getter
     private static final @NotNull List<PotionEffectType> effects = Registry.EFFECT.stream().collect(Collectors.toList());
 
-    public static boolean isGoodRandom(final double chance) {
-        return random.nextDouble() < chance;
-    }
-
-    public static void runTaskLater(@NonNull final Runnable runnable) {
-        runTaskLater(runnable, 1);
-    }
-
-    public static void runTaskLater(@NonNull final Runnable runnable, final long delay) {
-        Bukkit.getScheduler().runTaskLater(SlotsEffect.getInstance(), runnable, delay);
-    }
-
-    public static void runTaskAsynchronously(@NonNull final Runnable runnable) {
-        Bukkit.getScheduler().runTaskAsynchronously(SlotsEffect.getInstance(), runnable);
+    public static boolean isGoodRandom(final int chance) {
+        return random.nextInt(100) <= chance;
     }
 
     public static @Nullable EquipmentSlot getEquipmentOfArmorSlot(final int slot) {

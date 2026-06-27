@@ -1,6 +1,7 @@
 package com.zeydie.slotseffect.bukkit.loaders;
 
 import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
+import lombok.val;
 
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,10 @@ public final class EffectLoader {
     }
 
     public static PotionEffectData readEffect(Map<String, Object> map) {
+        val chance = map.containsKey("chance") ? (int) map.get("chance") : 0;
+
         return new PotionEffectData(
-                ((Number) map.get("chance")).doubleValue(),
+                chance,
                 (String) map.get("type"),
                 ((Number) map.get("amplifier")).intValue(),
                 ((Number) map.get("duration")).intValue()

@@ -1,10 +1,14 @@
 package com.zeydie.slotseffect.api;
 
+import com.google.common.collect.Maps;
+import com.zeydie.slotseffect.bukkit.data.items.ItemEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -15,8 +19,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class ItemEffects {
+    public static @NotNull Map<NamespacedKey, List<ItemEffectData>> itemsEffects = Maps.newHashMap();
+
     public static void applyAttackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         if (attackerLivingEntity instanceof final Player player) {
             @NonNull val attackerEffects = getAttackerEffects(itemstack, equipmentSlot);
@@ -46,47 +53,41 @@ public final class ItemEffects {
     }
 
     public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        @NonNull val components = ItemUtil.getComponents(itemstack);
+        @NonNull val component = ItemUtil.getComponent(itemstack);
 
-        if (components.isEmpty())
+        if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @NonNull val itemEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getItemsEffects();
+        @Nullable val effects = itemsEffects.get(component);
 
-        for (@NonNull val component : components) {
-            @Nullable val effects = itemEffects.get(component);
+        if (effects == null)
+            return List.of();
 
-            if (effects == null)
+        for (@NonNull val effectData : effects) {
+            @Nullable val slots = effectData.getSlots();
+
+            if (slots.contains(EquipmentSlot.HAND.name())) {
+                if (player.getInventory().getItemInMainHand().equals(itemstack))
+                    continue;
+            } else if (slots.contains(EquipmentSlot.OFF_HAND.name())) {
+                if (!player.getInventory().getItemInOffHand().equals(itemstack))
+                    continue;
+            } else if (
+                    slots != null && (
+                            !slots.contains("*")
+                                    && !slots.contains("ALL")
+                                    && !slots.contains("SLOT_" + slot)
+                    )
+            )
                 continue;
 
-            for (@NonNull val effectData : effects) {
-                @Nullable val slots = effectData.getSlots();
+            for (@NonNull val data : effectData.getStaticEffects()) {
+                @NonNull val effect = data.createPotionEffect();
 
-                if (slots.contains(EquipmentSlot.HAND.name())) {
-                    if (player.getInventory().getItemInMainHand().equals(itemstack))
-                        continue;
-                } else if (slots.contains(EquipmentSlot.OFF_HAND.name())) {
-                    if (!player.getInventory().getItemInOffHand().equals(itemstack))
-                        continue;
-                } else if (
-                        slots != null && (
-                                !slots.contains("*")
-                                        && !slots.contains("ALL")
-                                        && !slots.contains("SLOT_" + slot)
-                        )
-                )
-                    continue;
-
-                for (@NonNull val data : effectData.getStaticEffects()) {
-                    @NonNull val effect = data.createPotionEffect();
-
-                    if (effect != null)
-                        potionEffects.add(effect);
-                }
+                if (effect != null)
+                    potionEffects.add(effect);
             }
         }
 
@@ -94,43 +95,37 @@ public final class ItemEffects {
     }
 
     private static @NotNull List<PotionEffect> getAttackerEffects(@NonNull final ItemStack itemstack, @Nullable final EquipmentSlot equipmentSlot) {
-        @NonNull val components = ItemUtil.getComponents(itemstack);
+        @NonNull val component = ItemUtil.getComponent(itemstack);
 
-        if (components.isEmpty())
+        if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @NonNull val itemEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getItemsEffects();
+        @Nullable val effects = itemsEffects.get(component);
 
-        for (@NonNull val component : components) {
-            @Nullable val effects = itemEffects.get(component);
+        if (effects == null)
+            return List.of();
 
-            if (effects == null)
-                continue;
+        for (@NonNull val effectData : effects) {
+            if (equipmentSlot != null) {
+                @Nullable val slots = effectData.getSlots();
 
-            for (@NonNull val effectData : effects) {
-                if (equipmentSlot != null) {
-                    @Nullable val slots = effectData.getSlots();
+                if (
+                        slots != null && (
+                                !slots.contains("*")
+                                        && !slots.contains("ALL")
+                                        && !slots.contains(equipmentSlot.name())
+                        )
+                )
+                    continue;
+            }
 
-                    if (
-                            slots != null && (
-                                    !slots.contains("*")
-                                            && !slots.contains("ALL")
-                                            && !slots.contains(equipmentSlot.name())
-                            )
-                    )
-                        continue;
-                }
+            for (@NonNull val data : effectData.getAttackerEffects()) {
+                @NonNull val effect = data.createPotionEffect();
 
-                for (@NonNull val data : effectData.getAttackerEffects()) {
-                    @NonNull val effect = data.createPotionEffect();
-
-                    if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
-                        potionEffects.add(effect);
-                }
+                if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
+                    potionEffects.add(effect);
             }
         }
 
@@ -138,30 +133,24 @@ public final class ItemEffects {
     }
 
     private static @NotNull List<PotionEffect> getVictimEffects(@NonNull final ItemStack itemstack) {
-        @NonNull val components = ItemUtil.getComponents(itemstack);
+        @NonNull val component = ItemUtil.getComponent(itemstack);
 
-        if (components.isEmpty())
+        if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @NonNull val itemEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getItemsEffects();
+        @Nullable val effects = itemsEffects.get(component);
 
-        for (@NonNull val component : components) {
-            @Nullable val effects = itemEffects.get(component);
+        if (effects == null)
+            return List.of();
 
-            if (effects == null)
-                continue;
+        for (@NonNull val effectData : effects) {
+            for (@NonNull val data : effectData.getVictimEffects()) {
+                @NonNull val effect = data.createPotionEffect();
 
-            for (@NonNull val effectData : effects) {
-                for (@NonNull val data : effectData.getVictimEffects()) {
-                    @NonNull val effect = data.createPotionEffect();
-
-                    if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
-                        potionEffects.add(effect);
-                }
+                if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
+                    potionEffects.add(effect);
             }
         }
 

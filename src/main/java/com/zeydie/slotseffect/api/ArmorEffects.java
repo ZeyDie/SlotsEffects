@@ -1,11 +1,15 @@
 package com.zeydie.slotseffect.api;
 
+import com.google.common.collect.Maps;
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
-import com.zeydie.slotseffect.mountcore.utils.MountUtil;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -14,11 +18,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class ArmorEffects {
-    public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        MountUtil.getLogger().debug("getHitEffects: " + itemstack + " " + slot);
+    public static final @NotNull Map<NamespacedKey, List<ArmorEffectData>> armorEffects = Maps.newHashMap();
+    public static final @NotNull Map<NamespacedKey, List<ArmorSetEffectData>> armorSetsEffects = Maps.newHashMap();
 
+    public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
         @NonNull val hitEffects = getHitEffects(itemstack, slot);
 
         if (hitEffects.isEmpty())
@@ -27,48 +33,39 @@ public final class ArmorEffects {
         for (@NonNull val potionEffect : hitEffects) {
             @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
 
-            if (armorSlot == null) {
-                MountUtil.getLogger().debug("Armor slot " + slot + " is null");
+            if (armorSlot == null)
                 return;
-            }
 
             Effects.applyEffect(player, potionEffect);
-            MountUtil.getLogger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
         }
 
         hitEffects.clear();
     }
 
     public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
-        @NonNull val components = ItemUtil.getComponents(itemstack);
+        @Nullable val component = ItemUtil.getComponent(itemstack);
 
-        if (components.isEmpty())
+        if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @NonNull val itemEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getArmorEffects();
+        @Nullable val effects = armorEffects.get(component);
 
-        for (@NonNull val component : components) {
-            @Nullable val effects = itemEffects.get(component);
+        if (effects == null)
+            return List.of();
 
-            if (effects == null)
+        for (@NonNull val effectData : effects) {
+            @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+
+            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
                 continue;
 
-            for (@NonNull val effectData : effects) {
-                @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+            for (@NonNull val data : effectData.getStaticEffects()) {
+                @NonNull val effect = data.createPotionEffect();
 
-                if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
-                    continue;
-
-                for (@NonNull val data : effectData.getStaticEffects()) {
-                    @NonNull val effect = data.createPotionEffect();
-
-                    if (effect != null)
-                        potionEffects.add(effect);
-                }
+                if (effect != null)
+                    potionEffects.add(effect);
             }
         }
 
@@ -76,35 +73,29 @@ public final class ArmorEffects {
     }
 
     private static @NotNull List<PotionEffect> getHitEffects(@NonNull final ItemStack itemstack, final int slot) {
-        @NonNull val components = ItemUtil.getComponents(itemstack);
+        @NonNull val component = ItemUtil.getComponent(itemstack);
 
-        if (components.isEmpty())
+        if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @NonNull val itemEffects = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getArmorEffects();
+        @Nullable val effects = armorEffects.get(component);
 
-        for (@NonNull val component : components) {
-            @Nullable val effects = itemEffects.get(component);
+        if (effects == null)
+            return List.of();
 
-            if (effects == null)
+        for (@NonNull val effectData : effects) {
+            @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+
+            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
                 continue;
 
-            for (@NonNull val effectData : effects) {
-                @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+            for (@NonNull val data : effectData.getHitEffects()) {
+                @NonNull val effect = data.createPotionEffect();
 
-                if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
-                    continue;
-
-                for (@NonNull val data : effectData.getHitEffects()) {
-                    @NonNull val effect = data.createPotionEffect();
-
-                    if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
-                        potionEffects.add(effect);
-                }
+                if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
+                    potionEffects.add(effect);
             }
         }
 

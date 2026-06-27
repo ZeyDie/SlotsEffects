@@ -5,17 +5,12 @@ import com.zeydie.slotseffect.bukkit.listeners.PlayerListener;
 import com.zeydie.slotseffect.bukkit.tasks.InventoryTask;
 import com.zeydie.slotseffect.mountcore.modules.YmlConfigurationPluginModule;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
-import ru.mountcode.plugins.mountcore.api.v3.bukkit.Sender;
 import ru.mountcode.plugins.mountcore.paper.api.bootstrap.v1.MountPlugin;
 
 public final class SlotsEffect extends MountPlugin {
     private static final @NotNull String ID = "slotseffect";
-
-    @Getter
-    private static SlotsEffect instance;
 
     private final @NotNull PluginManager pluginManager = this.getServer().getPluginManager();
 
@@ -33,8 +28,6 @@ public final class SlotsEffect extends MountPlugin {
 
     @Override
     public void enable() {
-        instance = this;
-
         this.configurationModule = new YmlConfigurationPluginModule(this);
 
         this.getModuleManager().registerModule(this.configurationModule);
@@ -47,11 +40,11 @@ public final class SlotsEffect extends MountPlugin {
 
     @Override
     public void shutdown() {
-        this.configurationModule.shutdown();
+
     }
 
     @Override
     public void reload() {
-        this.configurationModule.reload();
+
     }
 }

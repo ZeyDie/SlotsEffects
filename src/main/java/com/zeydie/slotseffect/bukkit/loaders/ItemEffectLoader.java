@@ -9,43 +9,50 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public final class ItemEffectLoader {
-    public static ItemEffectData load(@NonNull final Path path) {
+    public static List<ItemEffectData> load(@NonNull final Path path) {
         Yaml yaml = new Yaml();
 
         try (@NonNull InputStream inputStream = Files.newInputStream(path)) {
             Map<String, Object> root = yaml.load(inputStream);
-            Map<String, Object> section = (Map<String, Object>) root.get("item-effect");
 
-            ItemEffectData data = new ItemEffectData();
+            List<Map<String, Object>> sections =
+                    (List<Map<String, Object>>) root.getOrDefault("item-effect", List.of());
 
-            data.setUuid(UUID.fromString((String) section.get("uuid")));
+            List<ItemEffectData> result = new ArrayList<>();
 
-            Map<String, Object> component = (Map<String, Object>) section.get("component");
-            data.setComponent(new NamespacedKey(
-                    (String) component.get("namespace"),
-                    (String) component.get("key")
-            ));
+            for (Map<String, Object> section : sections) {
+                ItemEffectData data = new ItemEffectData();
 
-            data.setSlots((List<String>) section.getOrDefault("slots", List.of()));
+                data.setUuid(UUID.fromString((String) section.get("uuid")));
 
-            data.setStaticEffects(EffectLoader.readEffects(
-                    (List<Map<String, Object>>) section.getOrDefault("staticEffects", List.of())
-            ));
+                Map<String, Object> component = (Map<String, Object>) section.get("component");
+                data.setComponent(new NamespacedKey(
+                        (String) component.get("namespace"),
+                        (String) component.get("key")
+                ));
 
-            data.setAttackerEffects(EffectLoader.readEffects(
-                    (List<Map<String, Object>>) section.getOrDefault("attackerEffects", List.of())
-            ));
+                data.setSlots((List<String>) section.getOrDefault("slots", List.of()));
 
-            data.setVictimEffects(EffectLoader.readEffects(
-                    (List<Map<String, Object>>) section.getOrDefault("victimEffects", List.of())
-            ));
+                data.setStaticEffects(EffectLoader.readEffects(
+                        (List<Map<String, Object>>) section.getOrDefault("staticEffects", List.of())
+                ));
 
-            return data;
+                data.setAttackerEffects(EffectLoader.readEffects(
+                        (List<Map<String, Object>>) section.getOrDefault("attackerEffects", List.of())
+                ));
+
+                data.setVictimEffects(EffectLoader.readEffects(
+                        (List<Map<String, Object>>) section.getOrDefault("victimEffects", List.of())
+                ));
+            }
+
+            return result;
         } catch (IOException e) {
             e.printStackTrace();
         }

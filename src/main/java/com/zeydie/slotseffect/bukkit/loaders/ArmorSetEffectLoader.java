@@ -1,5 +1,6 @@
 package com.zeydie.slotseffect.bukkit.loaders;
 
+import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import lombok.NonNull;
 import org.bukkit.NamespacedKey;
@@ -12,42 +13,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class ArmorSetEffectLoader {
-    public static ArmorSetEffectData load(@NonNull final Path path) {
+    public static List<ArmorSetEffectData> load(@NonNull final Path path) {
         Yaml yaml = new Yaml();
 
         try (@NonNull InputStream inputStream = Files.newInputStream(path)) {
             Map<String, Object> root = yaml.load(inputStream);
-            Map<String, Object> section = (Map<String, Object>) root.get("armor-effect");
+            List<Map<String, Object>> sections =
+                    (List<Map<String, Object>>) root.getOrDefault("armor-set-effect", List.of());
 
-            ArmorSetEffectData data = new ArmorSetEffectData();
+            List<ArmorSetEffectData> result = new ArrayList<>();
 
-            data.setUuid(UUID.fromString((String) section.get("uuid")));
+            for (Map<String, Object> section : sections) {
+                ArmorSetEffectData data = new ArmorSetEffectData();
 
-            Map<String, Object> component = (Map<String, Object>) section.get("component");
-            data.setComponent(new NamespacedKey(
-                    (String) component.get("namespace"),
-                    (String) component.get("key")
-            ));
+                data.setUuid(UUID.fromString((String) section.get("uuid")));
 
-            data.setEquipmentSlotsWithComponents(
-                    readEquipmentSlotsWithComponents(
-                            (Map<String, Map<String, String>>)  section.get("equipmentSlotsWithComponents")
-                    )
-            );
-            data.setStaticEffects(EffectLoader.readEffects(
-                    (List<Map<String, Object>>) section.getOrDefault("staticEffects", List.of())
-            ));
-            data.setHitEffects(EffectLoader.readEffects(
-                    (List<Map<String, Object>>) section.getOrDefault("hitEffects", List.of())
-            ));
+                Map<String, Object> component = (Map<String, Object>) section.get("component");
+                data.setComponent(new NamespacedKey(
+                        (String) component.get("namespace"),
+                        (String) component.get("key")
+                ));
 
-            return data;
+                data.setEquipmentSlotsWithComponents(
+                        readEquipmentSlotsWithComponents(
+                                (Map<String, Map<String, String>>) section.get("equipmentSlotsWithComponents")
+                        )
+                );
+                data.setStaticEffects(EffectLoader.readEffects(
+                        (List<Map<String, Object>>) section.getOrDefault("staticEffects", List.of())
+                ));
+                data.setHitEffects(EffectLoader.readEffects(
+                        (List<Map<String, Object>>) section.getOrDefault("hitEffects", List.of())
+                ));
+            }
+
+            return result;
         } catch (IOException e) {
             e.printStackTrace();
         }

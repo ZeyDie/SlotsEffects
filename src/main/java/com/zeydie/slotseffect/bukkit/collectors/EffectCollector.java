@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class EffectCollector {
-
     public static Map<PotionEffectType, PotionEffect> collect(@NonNull Player player) {
         Map<PotionEffectType, PotionEffect> desired = new HashMap<>();
 
@@ -55,9 +54,7 @@ public final class EffectCollector {
     }
 
     private static void collectArmorSetEffects(Player player, Map<PotionEffectType, PotionEffect> desired) {
-        @NonNull val armorSetEffectsMap = SlotsEffect.getInstance()
-                .getConfigurationModule()
-                .getArmorSetsEffects();
+        @NonNull val armorSetEffectsMap = ArmorEffects.armorSetsEffects;
 
         if (armorSetEffectsMap.isEmpty()) return;
 
@@ -114,7 +111,7 @@ public final class EffectCollector {
             PotionEffectType type = effect.getType();
             PotionEffect existing = desired.get(type);
 
-            if (existing == null || existing.getAmplifier() < effect.getAmplifier()) {
+            if (existing == null || existing.getAmplifier() < effect.getAmplifier() || existing.getDuration() < effect.getDuration()) {
                 desired.put(type, effect);
             }
         }
