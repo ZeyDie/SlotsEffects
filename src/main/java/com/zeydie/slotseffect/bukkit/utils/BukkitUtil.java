@@ -1,10 +1,8 @@
 package com.zeydie.slotseffect.bukkit.utils;
 
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import org.bukkit.Bukkit;
 import org.bukkit.Registry;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;

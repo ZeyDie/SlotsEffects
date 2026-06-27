@@ -1,28 +1,22 @@
 package com.zeydie.slotseffect.mountcore.modules;
 
-import com.google.common.collect.Maps;
 import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
-import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
-import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
-import com.zeydie.slotseffect.bukkit.data.items.ItemEffectData;
 import com.zeydie.slotseffect.bukkit.loaders.ArmorEffectLoader;
 import com.zeydie.slotseffect.bukkit.loaders.ArmorSetEffectLoader;
 import com.zeydie.slotseffect.bukkit.loaders.ItemEffectLoader;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.IMountPlugin;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.module.IReloadableModule;
 import ru.mountcode.plugins.mountcore.api.bootstrap.v1.module.PluginModule;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class YmlConfigurationPluginModule extends PluginModule implements IReloadableModule {
     @Getter
@@ -75,8 +69,8 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
         ArmorEffects.armorEffects.clear();
         ArmorEffects.armorSetsEffects.clear();
 
-        try {
-            Files.list(this.itemsPath)
+        try (@NonNull val stream = Files.list(this.itemsPath)) {
+            stream
                     .filter(path -> path.toString().endsWith(".yml") || path.toString().endsWith(".yaml"))
                     .forEach(
                             path ->
@@ -100,8 +94,12 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
                                 }
                             }
                     );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            Files.list(this.armorsPath)
+        try (@NonNull val stream = Files.list(this.armorsetsPath)) {
+            stream
                     .filter(path -> path.toString().endsWith(".yml") || path.toString().endsWith(".yaml"))
                     .forEach(
                             path ->
@@ -125,8 +123,12 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
                                 }
                             }
                     );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            Files.list(this.armorsetsPath)
+        try (@NonNull val stream = Files.list(this.armorsPath)) {
+            stream
                     .filter(path -> path.toString().endsWith(".yml") || path.toString().endsWith(".yaml"))
                     .forEach(
                             path ->
@@ -150,8 +152,8 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
                                 }
                             }
                     );
-        } catch (final Exception exception) {
-            exception.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

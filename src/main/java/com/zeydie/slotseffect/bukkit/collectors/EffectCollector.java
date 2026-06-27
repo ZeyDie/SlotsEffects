@@ -5,7 +5,6 @@ import com.zeydie.slotseffect.api.ItemEffects;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.data.objects.PotionEffectData;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;

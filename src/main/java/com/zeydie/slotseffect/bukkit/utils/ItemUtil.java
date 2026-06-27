@@ -1,6 +1,5 @@
 package com.zeydie.slotseffect.bukkit.utils;
 
-import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
@@ -11,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public final class ItemUtil {
     public static @Nullable NamespacedKey getComponent(@NonNull final ItemStack itemstack) {
@@ -24,7 +22,12 @@ public final class ItemUtil {
     }
 
     public static boolean hasComponent(@NonNull final ItemStack itemstack, @NonNull final NamespacedKey component) {
-        return getComponent(itemstack).equals(component);
+        @Nullable val itemStackComponent = getComponent(itemstack);
+
+        if (itemStackComponent == null)
+            return false;
+
+        return itemStackComponent.equals(component);
     }
 
     public static @NotNull Map<NamespacedKey, Integer> getArmorComponents(@NotNull final Player player) {

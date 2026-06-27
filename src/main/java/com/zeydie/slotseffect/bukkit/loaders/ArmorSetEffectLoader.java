@@ -1,6 +1,5 @@
 package com.zeydie.slotseffect.bukkit.loaders;
 
-import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import lombok.NonNull;
 import org.bukkit.NamespacedKey;
@@ -48,6 +47,8 @@ public final class ArmorSetEffectLoader {
                 data.setHitEffects(EffectLoader.readEffects(
                         (List<Map<String, Object>>) section.getOrDefault("hitEffects", List.of())
                 ));
+
+                result.add(data);
             }
 
             return result;

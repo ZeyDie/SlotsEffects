@@ -4,8 +4,6 @@ import com.google.common.collect.Maps;
 import com.zeydie.slotseffect.bukkit.data.items.ItemEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
@@ -69,7 +67,7 @@ public final class ItemEffects {
             @Nullable val slots = effectData.getSlots();
 
             if (slots.contains(EquipmentSlot.HAND.name())) {
-                if (player.getInventory().getItemInMainHand().equals(itemstack))
+                if (!player.getInventory().getItemInMainHand().equals(itemstack))
                     continue;
             } else if (slots.contains(EquipmentSlot.OFF_HAND.name())) {
                 if (!player.getInventory().getItemInOffHand().equals(itemstack))

@@ -50,6 +50,8 @@ public final class ItemEffectLoader {
                 data.setVictimEffects(EffectLoader.readEffects(
                         (List<Map<String, Object>>) section.getOrDefault("victimEffects", List.of())
                 ));
+
+                result.add(data);
             }
 
             return result;

@@ -5,8 +5,6 @@ import com.zeydie.slotseffect.bukkit.data.armors.ArmorEffectData;
 import com.zeydie.slotseffect.bukkit.data.armors.ArmorSetEffectData;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
-import com.zeydie.slotseffect.mountcore.SlotsEffect;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
@@ -25,7 +23,9 @@ public final class ArmorEffects {
     public static final @NotNull Map<NamespacedKey, List<ArmorSetEffectData>> armorSetsEffects = Maps.newHashMap();
 
     public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        @NonNull val hitEffects = getHitEffects(itemstack, slot);
+        @NonNull val hitEffects = getArmorHitEffects(itemstack, slot);
+
+        hitEffects.addAll(getArmorSetHitEffects(itemstack, slot));
 
         if (hitEffects.isEmpty())
             return;
@@ -72,7 +72,37 @@ public final class ArmorEffects {
         return potionEffects;
     }
 
-    private static @NotNull List<PotionEffect> getHitEffects(@NonNull final ItemStack itemstack, final int slot) {
+    private static @NotNull List<PotionEffect> getArmorHitEffects(@NonNull final ItemStack itemstack, final int slot) {
+        @NonNull val component = ItemUtil.getComponent(itemstack);
+
+        if (component == null)
+            return List.of();
+
+        @NonNull val potionEffects = new ArrayList<PotionEffect>();
+
+        @Nullable val effects = armorEffects.get(component);
+
+        if (effects == null)
+            return List.of();
+
+        for (@NonNull val effectData : effects) {
+            @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+
+            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
+                continue;
+
+            for (@NonNull val data : effectData.getHitEffects()) {
+                @NonNull val effect = data.createPotionEffect();
+
+                if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
+                    potionEffects.add(effect);
+            }
+        }
+
+        return potionEffects;
+    }
+
+    private static @NotNull List<PotionEffect> getArmorSetHitEffects(@NonNull final ItemStack itemstack, final int slot) {
         @NonNull val component = ItemUtil.getComponent(itemstack);
 
         if (component == null)
