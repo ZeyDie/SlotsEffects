@@ -2,7 +2,6 @@ package com.zeydie.slotseffect.bukkit.listeners;
 
 import com.zeydie.slotseffect.api.ArmorEffects;
 import com.zeydie.slotseffect.api.ItemEffects;
-import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.entity.LivingEntity;
@@ -23,12 +22,8 @@ public class EntityListener implements Listener {
         if (!event.isCancelled() && attacker instanceof final Player attackerPlayer && victim instanceof final LivingEntity victimLivingEntity) {
             @NonNull val itemInHand = attackerPlayer.getItemInHand();
 
-            BukkitUtil.runTaskAsynchronously(
-                    () -> {
-                        ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, attackerPlayer.getActiveItemHand());
-                        ItemEffects.applyVictimEffects(victimLivingEntity, itemInHand);
-                    }
-            );
+            ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, attackerPlayer.getActiveItemHand());
+            ItemEffects.applyVictimEffects(victimLivingEntity, itemInHand);
         }
     }
 
@@ -37,21 +32,17 @@ public class EntityListener implements Listener {
         @NonNull val victim = event.getEntity();
 
         if (!event.isCancelled() && victim instanceof final LivingEntity victimLivingEntity) {
-            BukkitUtil.runTaskAsynchronously(
-                    () -> {
-                        if (victimLivingEntity instanceof final Player victimPlayer) {
-                            @NonNull val inventory = victimPlayer.getInventory();
-                            @NonNull val armorContents = inventory.getArmorContents();
+            if (victimLivingEntity instanceof final Player victimPlayer) {
+                @NonNull val inventory = victimPlayer.getInventory();
+                @NonNull val armorContents = inventory.getArmorContents();
 
-                            for (int i = 0; i < armorContents.length; i++) {
-                                @Nullable val armorItem = armorContents[i];
+                for (int i = 0; i < armorContents.length; i++) {
+                    @Nullable val armorItem = armorContents[i];
 
-                                if (armorItem != null)
-                                    ArmorEffects.applyHitEffects(victimPlayer, armorItem, i);
-                            }
-                        }
-                    }
-            );
+                    if (armorItem != null)
+                        ArmorEffects.applyHitEffects(victimPlayer, armorItem, i);
+                }
+            }
         }
     }
 }

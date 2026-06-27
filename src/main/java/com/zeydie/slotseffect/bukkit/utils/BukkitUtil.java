@@ -3,20 +3,24 @@ package com.zeydie.slotseffect.bukkit.utils;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.val;
 import org.bukkit.Bukkit;
+import org.bukkit.Registry;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public final class BukkitUtil {
     private static final @NotNull Random random = new Random();
 
     @Getter
-    private static final @NotNull List<PotionEffectType> effects = List.of(PotionEffectType.values());
+    private static final @NotNull List<PotionEffectType> effects = Registry.EFFECT.stream().collect(Collectors.toList());
 
     public static boolean isGoodRandom(final double chance) {
         return random.nextDouble() < chance;
@@ -54,5 +58,16 @@ public final class BukkitUtil {
         }
 
         return null;
+    }
+
+    public static @Nullable String getPotionName(@NonNull final PotionEffect potionEffect) {
+        return getPotionName(potionEffect.getType());
+    }
+
+    public static @Nullable String getPotionName(@NonNull final PotionEffectType potionEffectType) {
+        @NotNull val key = potionEffectType.getKey();
+        @NonNull val id = key != null ? key.getKey() : potionEffectType.getName();
+
+        return id;
     }
 }

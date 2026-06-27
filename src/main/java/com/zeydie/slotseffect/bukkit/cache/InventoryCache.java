@@ -5,6 +5,7 @@ import com.zeydie.slotseffect.api.ItemEffects;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -80,5 +81,19 @@ public final class InventoryCache {
 
         this.inventoryCache.remove(playerUniqueId);
         this.armorCache.remove(playerUniqueId);
+    }
+
+    public void cleanup() {
+        this.inventoryCache.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
+        this.armorCache.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
+    }
+
+    public void cleanup(@NonNull final Player player) {
+        @NonNull val playerUniqueId = player.getUniqueId();
+
+        this.uncache(player);
+
+        this.inventoryCache.keySet().remove(playerUniqueId);
+        this.armorCache.keySet().remove(playerUniqueId);
     }
 }

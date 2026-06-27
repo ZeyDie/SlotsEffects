@@ -17,5 +17,5 @@ public class ArmorEffectData extends EffectData {
     private @NotNull NamespacedKey component;
     private @Nullable EquipmentSlot equipmentSlot;
 
-    private @Nullable List<PotionEffectData> hitEffects;
+    private @Nullable List<PotionEffectData> hitEffects = List.of();
 }

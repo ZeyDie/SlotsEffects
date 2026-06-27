@@ -16,6 +16,6 @@ public class ItemEffectData extends EffectData {
     private @NotNull NamespacedKey component;
     private @NotNull List<String> slots = List.of("ALL");
 
-    private @Nullable List<PotionEffectData> attackerEffects;
-    private @Nullable List<PotionEffectData> victimEffects;
+    private @Nullable List<PotionEffectData> attackerEffects = List.of();
+    private @Nullable List<PotionEffectData> victimEffects = List.of();
 }

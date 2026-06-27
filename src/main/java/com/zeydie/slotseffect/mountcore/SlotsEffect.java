@@ -44,7 +44,7 @@ public final class SlotsEffect extends MountPlugin {
         this.pluginManager.registerEvents(this.entityListener, this);
         this.pluginManager.registerEvents(this.playerListener, this);
 
-        this.inventoryTask.runTaskTimerAsynchronously(this, 0, 1);
+        this.inventoryTask.runTaskTimer(this, 0, 20);
 
         Sender.sendConsole(Component.translatable(ID + ".enabled"));
     }

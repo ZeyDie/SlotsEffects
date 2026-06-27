@@ -2,8 +2,9 @@ package com.zeydie.slotseffect.bukkit.data.objects;
 
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.val;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,7 @@ public record PotionEffectData
                 int duration
         ) {
     public @Nullable PotionEffect createPotionEffect() {
-       @Nullable val effect = PotionEffectType.getByName(this.type);
+       @Nullable val effect = Registry.EFFECT.get(NamespacedKey.minecraft(this.type.toLowerCase()));
 
         if (effect == null) {
             SlotsEffect.getInstance().logger().warn("PotionEffectType " + this.type + " not found!");

@@ -1,14 +1,19 @@
 package com.zeydie.slotseffect.api;
 
-import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import lombok.NonNull;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 public final class Effects {
     public static void applyEffect(@NonNull final Player player, @NonNull final PotionEffect potionEffect) {
-        BukkitUtil.runTaskLater(() -> player.addPotionEffect(potionEffect, true));
+        player.addPotionEffect(potionEffect, true);
     }
 
     public static void removeEffect(@NonNull final Player player, @NonNull final PotionEffect potionEffect) {
@@ -16,6 +21,6 @@ public final class Effects {
     }
 
     public static void removeEffect(@NonNull final Player player, @NonNull final PotionEffectType potionEffectType) {
-        BukkitUtil.runTaskLater(() -> player.removePotionEffect(potionEffectType));
+        player.removePotionEffect(potionEffectType);
     }
 }

@@ -6,6 +6,7 @@ import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import lombok.val;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -17,6 +18,18 @@ import java.util.*;
 public final class ArmorEffects {
     private static @NotNull Map<UUID, List<ActiveEffectSlot>> activeEffectSlots = new HashMap<>();
 
+    public static void cleanup() {
+        activeEffectSlots.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
+    }
+
+    public static void cleanup(@NonNull final Player player) {
+        cleanup(player.getUniqueId());
+    }
+
+    public static void cleanup(@NonNull final UUID playerUniqueId) {
+        activeEffectSlots.keySet().remove(playerUniqueId);
+    }
+
     public static void protectArmorSlot(@NonNull final Player player, @Nullable final ItemStack itemstack, final int slot) {
         @NonNull val activeEffects = activeEffectSlots.getOrDefault(player.getUniqueId(), new ArrayList<>());
 
@@ -26,13 +39,11 @@ public final class ArmorEffects {
         if (itemstack == null) {
             @NonNull val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
 
-            @NonNull val optional = activeEffects.stream()
+            @NonNull val list = activeEffects.stream()
                     .filter(activeEffectSlot -> activeEffectSlot.slot().equals(armorSlot))
-                    .findFirst();
+                    .toList();
 
-            if (optional.isPresent()) {
-                @NonNull val slotEffect = optional.get();
-
+            for (@NonNull val slotEffect : list) {
                 Effects.removeEffect(player, slotEffect.potionEffect());
 
                 activeEffects.remove(slotEffect);
@@ -43,107 +54,95 @@ public final class ArmorEffects {
     }
 
     public static void applyArmorEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        BukkitUtil.runTaskLater(
-                () -> {
-                    SlotsEffect.getInstance().logger().debug("getStaticEffects: " + itemstack + " " + slot);
+        SlotsEffect.getInstance().logger().debug("getStaticEffects: " + itemstack + " " + slot);
 
-                    @NonNull val staticEffects = getStaticEffects(itemstack, slot);
+        @NonNull val staticEffects = getStaticEffects(itemstack, slot);
 
-                    if (staticEffects.isEmpty())
-                        return;
+        if (staticEffects.isEmpty())
+            return;
 
-                    for (@NonNull val potionEffect : staticEffects) {
-                        @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
+        for (@NonNull val potionEffect : staticEffects) {
+            @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
 
-                        if (armorSlot == null) {
-                            SlotsEffect.getInstance().logger().debug("Armor slot " + slot + " is null");
-                            return;
-                        }
+            if (armorSlot == null) {
+                SlotsEffect.getInstance().logger().debug("Armor slot " + slot + " is null");
+                return;
+            }
 
-                        @NonNull val effect = new ActiveEffectSlot(armorSlot.name(), potionEffect);
+            @NonNull val effect = new ActiveEffectSlot(armorSlot.name(), potionEffect);
 
-                        @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+            @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
 
-                        SlotsEffect.getInstance().logger().debug("==========================");
-                        SlotsEffect.getInstance().logger().debug("activeEffects: " + activeEffects);
-                        SlotsEffect.getInstance().logger().debug("armorSlot: " + armorSlot);
+            SlotsEffect.getInstance().logger().debug("==========================");
+            SlotsEffect.getInstance().logger().debug("activeEffects: " + activeEffects);
+            SlotsEffect.getInstance().logger().debug("armorSlot: " + armorSlot);
 
-                        @NonNull val optional = activeEffects.stream()
-                                .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
-                                .findFirst();
+            @NonNull val optional = activeEffects.stream()
+                    .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
+                    .findFirst();
 
-                        SlotsEffect.getInstance().logger().debug("optional: " + optional);
+            SlotsEffect.getInstance().logger().debug("optional: " + optional);
 
-                        if (optional.isPresent()) {
-                            @NonNull val slotEffect = optional.get();
+            if (optional.isPresent()) {
+                @NonNull val slotEffect = optional.get();
 
-                            if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
-                                player.removePotionEffect(potionEffect.getType());
+                if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
+                    player.removePotionEffect(potionEffect.getType());
 
-                            if (!player.hasPotionEffect(potionEffect.getType()))
-                                activeEffects.remove(effect);
-                        }
+                if (player.hasPotionEffect(potionEffect.getType()))
+                    activeEffects.remove(effect);
+            }
 
-                        activeEffects.add(effect);
-                        Effects.applyEffect(player, potionEffect);
-                        SlotsEffect.getInstance().logger().debug("Apply effect " + potionEffect.getType().getName());
-                    }
+            activeEffects.add(effect);
+            Effects.applyEffect(player, potionEffect);
+            SlotsEffect.getInstance().logger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
+        }
 
-                    staticEffects.clear();
-                }
-        );
+        staticEffects.clear();
     }
 
     public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        BukkitUtil.runTaskLater(
-                () -> {
-                    SlotsEffect.getInstance().logger().debug("getHitEffects: " + itemstack + " " + slot);
+        SlotsEffect.getInstance().logger().debug("getHitEffects: " + itemstack + " " + slot);
 
-                    @NonNull val hitEffects = getHitEffects(itemstack, slot);
+        @NonNull val hitEffects = getHitEffects(itemstack, slot);
 
-                    if (hitEffects.isEmpty())
-                        return;
+        if (hitEffects.isEmpty())
+            return;
 
-                    for (@NonNull val potionEffect : hitEffects) {
-                        @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
+        for (@NonNull val potionEffect : hitEffects) {
+            @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
 
-                        if (armorSlot == null) {
-                            SlotsEffect.getInstance().logger().debug("Armor slot " + slot + " is null");
-                            return;
-                        }
+            if (armorSlot == null) {
+                SlotsEffect.getInstance().logger().debug("Armor slot " + slot + " is null");
+                return;
+            }
 
-                        @NonNull val effect = new ActiveEffectSlot(armorSlot.name(), potionEffect);
+            @NonNull val effect = new ActiveEffectSlot(armorSlot.name(), potionEffect);
 
-                        @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+            @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
 
-                        SlotsEffect.getInstance().logger().debug("==========================");
-                        SlotsEffect.getInstance().logger().debug("activeEffects: " + activeEffects);
-                        SlotsEffect.getInstance().logger().debug("armorSlot: " + armorSlot);
+            SlotsEffect.getInstance().logger().debug("==========================");
+            SlotsEffect.getInstance().logger().debug("activeEffects: " + activeEffects);
+            SlotsEffect.getInstance().logger().debug("armorSlot: " + armorSlot);
 
-                        @NonNull val optional = activeEffects.stream()
-                                .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
-                                .findFirst();
+            @NonNull val list = activeEffects.stream()
+                    .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
+                    .toList();
 
-                        SlotsEffect.getInstance().logger().debug("optional: " + optional);
+            for (@NonNull val slotEffect : list) {
+                if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
+                    player.removePotionEffect(potionEffect.getType());
 
-                        if (optional.isPresent()) {
-                            @NonNull val slotEffect = optional.get();
+                if (player.hasPotionEffect(potionEffect.getType()))
+                    activeEffects.remove(effect);
+            }
 
-                            if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
-                                player.removePotionEffect(potionEffect.getType());
+            activeEffects.add(effect);
+            Effects.applyEffect(player, potionEffect);
+            SlotsEffect.getInstance().logger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
+        }
 
-                            if (!player.hasPotionEffect(potionEffect.getType()))
-                                activeEffects.remove(effect);
-                        }
-
-                        activeEffects.add(effect);
-                        Effects.applyEffect(player, potionEffect);
-                        SlotsEffect.getInstance().logger().debug("Apply effect " + potionEffect.getType().getName());
-                    }
-
-                    hitEffects.clear();
-                }
-        );
+        hitEffects.clear();
     }
 
     public static void applyArmorSets(@NotNull final Player player) {
@@ -154,7 +153,7 @@ public final class ArmorEffects {
 
     }
 
-    private static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
+    public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
         if (components.isEmpty())

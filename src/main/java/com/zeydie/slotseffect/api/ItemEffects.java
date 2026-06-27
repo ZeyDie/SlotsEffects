@@ -6,6 +6,7 @@ import com.zeydie.slotseffect.bukkit.utils.ItemUtil;
 import com.zeydie.slotseffect.mountcore.SlotsEffect;
 import lombok.NonNull;
 import lombok.val;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -19,6 +20,18 @@ import java.util.*;
 public final class ItemEffects {
     private static @NotNull Map<UUID, List<ActiveEffectSlot>> activeEffectSlots = new HashMap<>();
 
+    public static void cleanup() {
+        activeEffectSlots.keySet().removeIf(uuid -> !Bukkit.getOfflinePlayer(uuid).isOnline());
+    }
+
+    public static void cleanup(@NonNull final Player player) {
+        cleanup(player.getUniqueId());
+    }
+
+    public static void cleanup(@NonNull final UUID playerUniqueId) {
+        activeEffectSlots.keySet().remove(playerUniqueId);
+    }
+
     public static void protectInventorySlot(@NonNull final Player player, @Nullable final ItemStack itemstack, final int slot) {
         @NonNull val activeEffects = activeEffectSlots.getOrDefault(player.getUniqueId(), new ArrayList<>());
 
@@ -28,11 +41,9 @@ public final class ItemEffects {
         if (itemstack == null) {
             @NonNull val optional = activeEffects.stream()
                     .filter(activeEffectSlot -> activeEffectSlot.slot().equals("SLOT_" + slot))
-                    .findFirst();
+                    .toList();
 
-            if (optional.isPresent()) {
-                @NonNull val slotEffect = optional.get();
-
+            for (@NonNull val slotEffect : optional) {
                 Effects.removeEffect(player, slotEffect.potionEffect());
 
                 activeEffects.remove(slotEffect);
@@ -43,82 +54,71 @@ public final class ItemEffects {
     }
 
     public static void applyEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        BukkitUtil.runTaskLater(
-                () -> {
-                    SlotsEffect.getInstance().logger().debug("getStaticEffects: " + itemstack + " " + slot);
+        SlotsEffect.getInstance().logger().debug("getStaticEffects: " + itemstack + " " + slot);
 
-                    @NonNull val staticEffects = getStaticEffects(player, itemstack, slot);
+        @NonNull val staticEffects = getStaticEffects(player, itemstack, slot);
 
-                    if (staticEffects.isEmpty())
-                        return;
+        if (staticEffects.isEmpty())
+            return;
 
-                    for (@NonNull val potionEffect : staticEffects) {
-                        @NonNull val effect = new ActiveEffectSlot("SLOT_" + slot, potionEffect);
+        for (@NonNull val potionEffect : staticEffects) {
+            @NonNull val effect = new ActiveEffectSlot("SLOT_" + slot, potionEffect);
 
-                        @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
+            @NonNull val activeEffects = activeEffectSlots.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>());
 
-                        if (activeEffects.isEmpty()) {
-                            activeEffects.add(effect);
+            if (activeEffects.isEmpty()) {
+                activeEffects.add(effect);
+                Effects.applyEffect(player, potionEffect);
+            } else {
+                @NonNull val list = activeEffects.stream()
+                        .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
+                        .toList();
+
+                if (list.isEmpty()) {
+                    Effects.applyEffect(player, potionEffect);
+                    SlotsEffect.getInstance().logger().debug("Apply effect " + BukkitUtil.getPotionName(potionEffect));
+                } else
+                    for (@NonNull val slotEffect : list) {
+                        if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier()) {
+                            Effects.removeEffect(player, slotEffect.potionEffect());
                             Effects.applyEffect(player, potionEffect);
-                        } else {
-                            @NonNull val optional = activeEffects.stream()
-                                    .filter(activeEffectSlot -> activeEffectSlot.potionEffect().getType().equals(potionEffect.getType()))
-                                    .findFirst();
-
-                            if (optional.isPresent()) {
-                                @NonNull val slotEffect = optional.get();
-
-                                if (slotEffect.potionEffect().getAmplifier() < potionEffect.getAmplifier())
-                                    player.removePotionEffect(potionEffect.getType());
-                            } else {
-                                Effects.applyEffect(player, potionEffect);
-                                SlotsEffect.getInstance().logger().debug("Apply effect " + potionEffect.getType().getName());
-                            }
                         }
                     }
+            }
+        }
 
-                    staticEffects.clear();
-                }
-        );
+        staticEffects.clear();
     }
 
     public static void applyAttackerEffects(@NonNull final LivingEntity attackerLivingEntity, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
-        BukkitUtil.runTaskLater(
-                () -> {
-                    if (attackerLivingEntity instanceof final Player player) {
-                        @NonNull val attackerEffects = getAttackerEffects(itemstack, equipmentSlot);
+        if (attackerLivingEntity instanceof final Player player) {
+            @NonNull val attackerEffects = getAttackerEffects(itemstack, equipmentSlot);
 
-                        if (attackerEffects.isEmpty())
-                            return;
+            if (attackerEffects.isEmpty())
+                return;
 
-                        for (@NonNull val potionEffect : attackerEffects)
-                            Effects.applyEffect(player, potionEffect);
+            for (@NonNull val potionEffect : attackerEffects)
+                Effects.applyEffect(player, potionEffect);
 
-                        attackerEffects.clear();
-                    }
-                }
-        );
+            attackerEffects.clear();
+        }
     }
 
     public static void applyVictimEffects(@NonNull final LivingEntity victimLivingEntity, @NonNull final ItemStack itemstack) {
-        BukkitUtil.runTaskLater(
-                () -> {
-                    if (victimLivingEntity instanceof final Player player) {
-                        @NonNull val victimEffects = getVictimEffects(itemstack);
+        if (victimLivingEntity instanceof final Player player) {
+            @NonNull val victimEffects = getVictimEffects(itemstack);
 
-                        if (victimEffects.isEmpty())
-                            return;
+            if (victimEffects.isEmpty())
+                return;
 
-                        for (@NonNull val potionEffect : victimEffects)
-                            Effects.applyEffect(player, potionEffect);
+            for (@NonNull val potionEffect : victimEffects)
+                Effects.applyEffect(player, potionEffect);
 
-                        victimEffects.clear();
-                    }
-                }
-        );
+            victimEffects.clear();
+        }
     }
 
-    private static @NotNull List<PotionEffect> getStaticEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
+    public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
         @NonNull val components = ItemUtil.getComponents(itemstack);
 
         if (components.isEmpty())
