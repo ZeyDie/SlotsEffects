@@ -77,6 +77,10 @@ public class YmlConfigurationPluginModule extends PluginModule implements IReloa
     }
 
     private void initialize() {
+        this.itemsEffects.clear();
+        this.armorEffects.clear();
+        this.armorSetsEffects.clear();
+
         try {
             Files.list(this.itemsPath)
                     .filter(path -> path.toString().endsWith(".yml") || path.toString().endsWith(".yaml"))
