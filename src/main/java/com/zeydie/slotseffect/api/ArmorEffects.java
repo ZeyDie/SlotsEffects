@@ -23,24 +23,6 @@ public final class ArmorEffects {
     public static final @NotNull Map<NamespacedKey, List<ArmorEffectData>> armorEffects = Maps.newHashMap();
     public static final @NotNull Map<NamespacedKey, List<ArmorSetEffectData>> armorSetsEffects = Maps.newHashMap();
 
-    public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
-        @NonNull val hitEffects = getArmorHitEffects(itemstack, equipmentSlot);
-
-        hitEffects.addAll(getArmorSetHitEffects(itemstack, equipmentSlot));
-
-        if (hitEffects.isEmpty())
-            return;
-
-        for (@NonNull val potionEffect : hitEffects) {
-            if (equipmentSlot == null)
-                return;
-
-            Effects.applyEffect(player, potionEffect);
-        }
-
-        hitEffects.clear();
-    }
-
     public static @NotNull List<PotionEffect> getStaticEffects(@NonNull final ItemStack itemstack, final int slot) {
         @Nullable val component = ItemUtil.getComponent(itemstack);
 
@@ -48,16 +30,17 @@ public final class ArmorEffects {
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
-
         @Nullable val effects = armorEffects.get(component);
 
         if (effects == null)
             return List.of();
 
+        @Nullable val requiredSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
+
         for (@NonNull val effectData : effects) {
             @Nullable val equipmentSlot = effectData.getEquipmentSlot();
 
-            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
+            if (equipmentSlot != null && equipmentSlot != requiredSlot)
                 continue;
 
             for (@NonNull val data : effectData.getStaticEffects()) {
@@ -71,14 +54,13 @@ public final class ArmorEffects {
         return potionEffects;
     }
 
-    private static @NotNull List<PotionEffect> getArmorHitEffects(@NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
+    public static @NotNull List<PotionEffect> getArmorHitEffects(@NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         @NonNull val component = ItemUtil.getComponent(itemstack);
 
         if (component == null)
             return List.of();
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
-
         @Nullable val effects = armorEffects.get(component);
 
         if (effects == null)
@@ -87,7 +69,7 @@ public final class ArmorEffects {
         for (@NonNull val effectData : effects) {
             @Nullable val effectDataEquipmentSlot = effectData.getEquipmentSlot();
 
-            if (equipmentSlot != null && effectDataEquipmentSlot != equipmentSlot)
+            if (effectDataEquipmentSlot != null && effectDataEquipmentSlot != equipmentSlot)
                 continue;
 
             for (@NonNull val data : effectData.getHitEffects()) {
@@ -101,33 +83,52 @@ public final class ArmorEffects {
         return potionEffects;
     }
 
-    private static @NotNull List<PotionEffect> getArmorSetHitEffects(@NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
-        @NonNull val component = ItemUtil.getComponent(itemstack);
-
-        if (component == null)
-            return List.of();
-
+    public static @NotNull List<PotionEffect> getArmorSetHitEffects(@NonNull final Player player) {
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
+        @NonNull val armorSetEffectsMap = armorSetsEffects;
 
-        @Nullable val effects = armorSetsEffects.get(component);
+        if (armorSetEffectsMap.isEmpty()) return potionEffects;
 
-        if (effects == null)
-            return List.of();
-
-        for (@NonNull val effectData : effects) {
-            @Nullable val effectDataEquipmentSlotsWithComponents = effectData.getEquipmentSlotsWithComponents();
-
-            if (equipmentSlot != null && !effectDataEquipmentSlotsWithComponents.containsKey(equipmentSlot))
-                continue;
-
-            for (@NonNull val data : effectData.getHitEffects()) {
-                @NonNull val effect = data.createPotionEffect();
-
-                if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
-                    potionEffects.add(effect);
+        for (List<ArmorSetEffectData> setList : armorSetEffectsMap.values()) {
+            for (@NonNull val setData : setList) {
+                // Полная проверка комплекта
+                if (isArmorSetComplete(player, setData)) {
+                    for (@NonNull val data : setData.getHitEffects()) {
+                        @NonNull val effect = data.createPotionEffect();
+                        if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
+                            potionEffects.add(effect);
+                    }
+                }
             }
         }
 
         return potionEffects;
+    }
+
+    private static boolean isArmorSetComplete(@NonNull Player player, @NonNull ArmorSetEffectData setData) {
+        @NonNull val required = setData.getEquipmentSlotsWithComponents();
+        if (required.isEmpty()) return false;
+
+        for (@NonNull val entry : required.entrySet()) {
+            @NonNull EquipmentSlot slot = entry.getKey();
+            @NonNull NamespacedKey component = entry.getValue();
+
+            ItemStack itemInSlot = getItemInSlot(player, slot);
+            if (itemInSlot == null || !ItemUtil.hasComponent(itemInSlot, component)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static @Nullable ItemStack getItemInSlot(@NonNull Player player, @NonNull EquipmentSlot slot) {
+        return switch (slot) {
+            case HEAD -> player.getInventory().getHelmet();
+            case CHEST -> player.getInventory().getChestplate();
+            case LEGS -> player.getInventory().getLeggings();
+            case FEET -> player.getInventory().getBoots();
+            case OFF_HAND -> player.getInventory().getItemInOffHand();
+            default -> null;
+        };
     }
 }

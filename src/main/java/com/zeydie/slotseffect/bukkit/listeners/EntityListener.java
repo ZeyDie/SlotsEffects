@@ -1,6 +1,7 @@
 package com.zeydie.slotseffect.bukkit.listeners;
 
 import com.zeydie.slotseffect.api.ArmorEffects;
+import com.zeydie.slotseffect.api.Effects;
 import com.zeydie.slotseffect.api.ItemEffects;
 import com.zeydie.slotseffect.bukkit.utils.BukkitUtil;
 import lombok.NonNull;
@@ -32,9 +33,18 @@ public class EntityListener implements Listener {
             for (int i = 0; i < armorContents.length; i++) {
                 @Nullable val armorItem = armorContents[i];
 
-                if (armorItem != null)
-                    ArmorEffects.applyHitEffects(victimPlayer, armorItem, BukkitUtil.getEquipmentOfArmorSlot(i));
+                if (armorItem != null) {
+                    @NonNull val hitEffects = ArmorEffects.getArmorHitEffects(armorItem, BukkitUtil.getEquipmentOfArmorSlot(i));
+
+                    for (@NonNull val effect : hitEffects)
+                        Effects.applyEffect(victimPlayer, effect);
+                }
             }
+
+            @NonNull val setHitEffects = ArmorEffects.getArmorSetHitEffects(victimPlayer);
+
+            for (@NonNull val effect : setHitEffects)
+                Effects.applyEffect(victimPlayer, effect);
         }
     }
 }
