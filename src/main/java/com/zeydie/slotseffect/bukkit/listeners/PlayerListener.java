@@ -52,12 +52,6 @@ public class PlayerListener implements Listener {
         InventoryEffectService.markDirty(event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPickup(@NonNull final EntityPickupItemEvent event) {
-        if (event.getEntity() instanceof final Player player)
-            InventoryEffectService.markDirty(player);
-    }
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onRespawn(@NonNull final PlayerRespawnEvent event) {
         InventoryEffectService.markDirty(event.getPlayer());

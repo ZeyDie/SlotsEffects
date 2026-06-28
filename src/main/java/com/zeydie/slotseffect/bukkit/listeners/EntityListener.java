@@ -21,30 +21,32 @@ public class EntityListener implements Listener {
         @NonNull val attacker = event.getDamager();
         @NonNull val victim = event.getEntity();
 
-        if (!event.isCancelled() && attacker instanceof final Player attackerPlayer && victim instanceof final Player victimPlayer) {
+        if (!event.isCancelled() && attacker instanceof final Player attackerPlayer && victim instanceof final LivingEntity victimLivingEntity) {
             @NonNull val itemInHand = attackerPlayer.getInventory().getItemInMainHand();
 
             ItemEffects.applyAttackerEffects(attackerPlayer, itemInHand, EquipmentSlot.HAND);
-            ItemEffects.applyVictimEffects(victimPlayer, itemInHand);
+            ItemEffects.applyVictimEffects(victimLivingEntity, itemInHand);
 
-            @NonNull val inventory = victimPlayer.getInventory();
-            @NonNull val armorContents = inventory.getArmorContents();
+            if (victimLivingEntity instanceof final Player victimPlayer) {
+                @NonNull val inventory = victimPlayer.getInventory();
+                @NonNull val armorContents = inventory.getArmorContents();
 
-            for (int i = 0; i < armorContents.length; i++) {
-                @Nullable val armorItem = armorContents[i];
+                for (int i = 0; i < armorContents.length; i++) {
+                    @Nullable val armorItem = armorContents[i];
 
-                if (armorItem != null) {
-                    @NonNull val hitEffects = ArmorEffects.getArmorHitEffects(armorItem, BukkitUtil.getEquipmentOfArmorSlot(i));
+                    if (armorItem != null) {
+                        @NonNull val hitEffects = ArmorEffects.getArmorHitEffects(armorItem, BukkitUtil.getEquipmentOfArmorSlot(i));
 
-                    for (@NonNull val effect : hitEffects)
-                        Effects.applyEffect(victimPlayer, effect);
+                        for (@NonNull val effect : hitEffects)
+                            Effects.applyEffect(victimPlayer, effect);
+                    }
                 }
+
+                @NonNull val setHitEffects = ArmorEffects.getArmorSetHitEffects(victimPlayer);
+
+                for (@NonNull val effect : setHitEffects)
+                    Effects.applyEffect(victimPlayer, effect);
             }
-
-            @NonNull val setHitEffects = ArmorEffects.getArmorSetHitEffects(victimPlayer);
-
-            for (@NonNull val effect : setHitEffects)
-                Effects.applyEffect(victimPlayer, effect);
         }
     }
 }

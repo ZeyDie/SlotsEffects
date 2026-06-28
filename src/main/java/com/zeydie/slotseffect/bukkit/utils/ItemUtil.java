@@ -14,7 +14,10 @@ import java.util.Map;
 
 public final class ItemUtil {
     public static @Nullable NamespacedKey getComponent(@NonNull final ItemStack itemstack) {
-        @NonNull val itemModelData = itemstack.getData(DataComponentTypes.ITEM_MODEL);
+        @Nullable val itemModelData = itemstack.getData(DataComponentTypes.ITEM_MODEL);
+
+        if (itemModelData == null) return null;
+
         @NonNull val namespacedKey = new NamespacedKey(itemModelData.namespace(), itemModelData.value());
 
         return namespacedKey;

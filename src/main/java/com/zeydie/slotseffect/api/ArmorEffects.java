@@ -95,6 +95,7 @@ public final class ArmorEffects {
                 if (isArmorSetComplete(player, setData)) {
                     for (@NonNull val data : setData.getHitEffects()) {
                         @NonNull val effect = data.createPotionEffect();
+
                         if (effect != null && BukkitUtil.isGoodRandom(data.chance()))
                             potionEffects.add(effect);
                     }
