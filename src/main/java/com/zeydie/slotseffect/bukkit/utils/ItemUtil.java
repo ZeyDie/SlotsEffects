@@ -1,5 +1,6 @@
 package com.zeydie.slotseffect.bukkit.utils;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
@@ -13,12 +14,10 @@ import java.util.Map;
 
 public final class ItemUtil {
     public static @Nullable NamespacedKey getComponent(@NonNull final ItemStack itemstack) {
-        @Nullable val itemMeta = itemstack.getItemMeta();
+        @NonNull val itemModelData = itemstack.getData(DataComponentTypes.ITEM_MODEL);
+        @NonNull val namespacedKey = new NamespacedKey(itemModelData.namespace(), itemModelData.value());
 
-        if (itemMeta == null)
-            return null;
-
-        return itemMeta.getItemModel();
+        return namespacedKey;
     }
 
     public static boolean hasComponent(@NonNull final ItemStack itemstack, @NonNull final NamespacedKey component) {

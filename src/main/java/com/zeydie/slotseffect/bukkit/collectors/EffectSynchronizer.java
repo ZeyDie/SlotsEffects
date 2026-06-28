@@ -22,6 +22,7 @@ public final class EffectSynchronizer {
 
         Set<PotionEffectType> newlyAppliedThisTick = new HashSet<>();
 
+        // 1. Применяем/обновляем нужные эффекты
         for (PotionEffect wanted : desired.values()) {
             PotionEffectType type = wanted.getType();
             PotionEffect current = player.getPotionEffect(type);
@@ -30,7 +31,8 @@ public final class EffectSynchronizer {
 
             if (current == null) {
                 shouldApply = true;
-            } else if (current.getAmplifier() < wanted.getAmplifier()) {
+            } else if (current.getAmplifier() < wanted.getAmplifier() ||
+                    (current.getAmplifier() == wanted.getAmplifier() && current.getDuration() < wanted.getDuration())) {
                 shouldApply = true;
             }
 
@@ -42,12 +44,19 @@ public final class EffectSynchronizer {
             }
         }
 
+        // 2. Удаляем ТОЛЬКО свои эффекты, которые больше не нужны
         for (PotionEffectType type : currentlyManaged) {
-            if (!newlyAppliedThisTick.contains(type) && player.hasPotionEffect(type)) {
-                Effects.removeEffect(player, type);
+            if (!newlyAppliedThisTick.contains(type)) {
+                // Проверяем, есть ли эффект сейчас
+                if (player.hasPotionEffect(type)) {
+                    // Удаляем только если это наш эффект (мы его раньше применяли)
+                    // Это решает проблему с "чужими" эффектами от других плагинов
+                    Effects.removeEffect(player, type);
+                }
             }
         }
 
+        // Обновляем список управляемых эффектов
         currentlyManaged.clear();
         currentlyManaged.addAll(newlyAppliedThisTick);
     }
@@ -56,13 +65,17 @@ public final class EffectSynchronizer {
         Set<PotionEffectType> managed = managedEffects.remove(player.getUniqueId());
         if (managed != null) {
             for (PotionEffectType type : managed) {
-                Effects.removeEffect(player, type);
+                if (player.hasPotionEffect(type)) {
+                    Effects.removeEffect(player, type);
+                }
             }
         }
     }
 
     public static void cleanup() {
-        managedEffects.keySet().removeIf(uuid ->
-                !org.bukkit.Bukkit.getOfflinePlayer(uuid).isOnline());
+        managedEffects.keySet().removeIf(uuid -> {
+            Player player = org.bukkit.Bukkit.getPlayer(uuid);
+            return player == null || !player.isOnline();
+        });
     }
 }

@@ -21,7 +21,7 @@ public final class BukkitUtil {
     private static final @NotNull List<PotionEffectType> effects = Registry.EFFECT.stream().collect(Collectors.toList());
 
     public static boolean isGoodRandom(final int chance) {
-        return random.nextInt(100) <= chance;
+        return random.nextInt(100) + 1 <= chance;
     }
 
     public static @Nullable EquipmentSlot getEquipmentOfArmorSlot(final int slot) {

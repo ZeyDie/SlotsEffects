@@ -66,20 +66,21 @@ public final class ItemEffects {
         for (@NonNull val effectData : effects) {
             @Nullable val slots = effectData.getSlots();
 
-            if (slots.contains(EquipmentSlot.HAND.name())) {
+            if (
+                    slots != null && (
+                            !slots.contains("*")
+                                    && !slots.contains("ALL")
+                                    && !slots.contains("SLOT_" + slot)
+                    ) && (!slots.contains(EquipmentSlot.HAND.name()) && !slots.contains(EquipmentSlot.OFF_HAND.name()))
+            ) {
+                continue;
+            } else if (slots.contains(EquipmentSlot.HAND.name())) {
                 if (!player.getInventory().getItemInMainHand().equals(itemstack))
                     continue;
             } else if (slots.contains(EquipmentSlot.OFF_HAND.name())) {
                 if (!player.getInventory().getItemInOffHand().equals(itemstack))
                     continue;
-            } else if (
-                    slots != null && (
-                            !slots.contains("*")
-                                    && !slots.contains("ALL")
-                                    && !slots.contains("SLOT_" + slot)
-                    )
-            )
-                continue;
+            }
 
             for (@NonNull val data : effectData.getStaticEffects()) {
                 @NonNull val effect = data.createPotionEffect();

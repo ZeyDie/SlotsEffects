@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.val;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -22,18 +23,16 @@ public final class ArmorEffects {
     public static final @NotNull Map<NamespacedKey, List<ArmorEffectData>> armorEffects = Maps.newHashMap();
     public static final @NotNull Map<NamespacedKey, List<ArmorSetEffectData>> armorSetsEffects = Maps.newHashMap();
 
-    public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, final int slot) {
-        @NonNull val hitEffects = getArmorHitEffects(itemstack, slot);
+    public static void applyHitEffects(@NonNull final Player player, @NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
+        @NonNull val hitEffects = getArmorHitEffects(itemstack, equipmentSlot);
 
-        hitEffects.addAll(getArmorSetHitEffects(itemstack, slot));
+        hitEffects.addAll(getArmorSetHitEffects(itemstack, equipmentSlot));
 
         if (hitEffects.isEmpty())
             return;
 
         for (@NonNull val potionEffect : hitEffects) {
-            @Nullable val armorSlot = BukkitUtil.getEquipmentOfArmorSlot(slot);
-
-            if (armorSlot == null)
+            if (equipmentSlot == null)
                 return;
 
             Effects.applyEffect(player, potionEffect);
@@ -72,7 +71,7 @@ public final class ArmorEffects {
         return potionEffects;
     }
 
-    private static @NotNull List<PotionEffect> getArmorHitEffects(@NonNull final ItemStack itemstack, final int slot) {
+    private static @NotNull List<PotionEffect> getArmorHitEffects(@NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         @NonNull val component = ItemUtil.getComponent(itemstack);
 
         if (component == null)
@@ -86,9 +85,9 @@ public final class ArmorEffects {
             return List.of();
 
         for (@NonNull val effectData : effects) {
-            @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+            @Nullable val effectDataEquipmentSlot = effectData.getEquipmentSlot();
 
-            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
+            if (equipmentSlot != null && effectDataEquipmentSlot != equipmentSlot)
                 continue;
 
             for (@NonNull val data : effectData.getHitEffects()) {
@@ -102,7 +101,7 @@ public final class ArmorEffects {
         return potionEffects;
     }
 
-    private static @NotNull List<PotionEffect> getArmorSetHitEffects(@NonNull final ItemStack itemstack, final int slot) {
+    private static @NotNull List<PotionEffect> getArmorSetHitEffects(@NonNull final ItemStack itemstack, @NonNull final EquipmentSlot equipmentSlot) {
         @NonNull val component = ItemUtil.getComponent(itemstack);
 
         if (component == null)
@@ -110,15 +109,15 @@ public final class ArmorEffects {
 
         @NonNull val potionEffects = new ArrayList<PotionEffect>();
 
-        @Nullable val effects = armorEffects.get(component);
+        @Nullable val effects = armorSetsEffects.get(component);
 
         if (effects == null)
             return List.of();
 
         for (@NonNull val effectData : effects) {
-            @Nullable val equipmentSlot = effectData.getEquipmentSlot();
+            @Nullable val effectDataEquipmentSlotsWithComponents = effectData.getEquipmentSlotsWithComponents();
 
-            if (equipmentSlot != null && equipmentSlot != BukkitUtil.getEquipmentOfArmorSlot(slot))
+            if (equipmentSlot != null && !effectDataEquipmentSlotsWithComponents.containsKey(equipmentSlot))
                 continue;
 
             for (@NonNull val data : effectData.getHitEffects()) {
